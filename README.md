@@ -1,5 +1,5 @@
 <p align="center">
-  <h1 align="center">flowtest</h1>
+  <h1 align="center">FlowTest</h1>
   <p align="center">AI-powered cross-platform test runner for web, Android, and iOS</p>
   <p align="center">
     <a href="#installation">Install</a> &bull;
@@ -42,13 +42,13 @@ flow.yaml ────────► │                                       
 
 ### Prerequisites
 
-| Tool | Used for | Install |
-|------|----------|---------|
-| [Claude Code](https://claude.ai/download) | Everything | `npm install -g @anthropic-ai/claude-code` |
-| [agent-browser](https://github.com/anthropics/agent-browser) | Web platform driver | `npm install -g @anthropic-ai/agent-browser` |
-| `adb` | Android platform driver | [Android SDK Platform Tools](https://developer.android.com/tools/releases/platform-tools) |
-| `idb` | iOS platform driver | `brew install facebook/fb/idb-companion` |
-| [Node.js](https://nodejs.org) | Report generation | `brew install node` or [nodejs.org](https://nodejs.org) |
+| Tool                                                         | Used for                | Install                                                                                   |
+| ------------------------------------------------------------ | ----------------------- | ----------------------------------------------------------------------------------------- |
+| [Claude Code](https://claude.ai/download)                    | Everything              | `npm install -g @anthropic-ai/claude-code`                                                |
+| [agent-browser](https://github.com/anthropics/agent-browser) | Web platform driver     | `npm install -g @anthropic-ai/agent-browser`                                              |
+| `adb`                                                        | Android platform driver | [Android SDK Platform Tools](https://developer.android.com/tools/releases/platform-tools) |
+| `idb`                                                        | iOS platform driver     | `brew install facebook/fb/idb-companion`                                                  |
+| [Node.js](https://nodejs.org)                                | Report generation       | `brew install node` or [nodejs.org](https://nodejs.org)                                   |
 
 > Only install what you need. Web-only flows need `claude` + `agent-browser` + `node`.
 
@@ -117,31 +117,31 @@ Open `flowtest-report-checkout-<timestamp>/viewer.html` in any browser.
 Flows are YAML files with three required fields:
 
 ```yaml
-flow: my-flow-name        # Name (used in report directory)
-platform: web             # web | android | ios
-app: https://myapp.com    # URL (web) or bundle ID (mobile)
+flow: my-flow-name # Name (used in report directory)
+platform: web # web | android | ios
+app: https://myapp.com # URL (web) or bundle ID (mobile)
 
 steps:
-  - # ... step list
+  -  # ... step list
 ```
 
 ### Step types
 
-| Step | Example | Description |
-|------|---------|-------------|
-| `tapOn` | `tapOn: "Log in"` | Tap element by visible text |
-| `tapOn` | `tapOn: {id: "submit-btn"}` | Tap by accessibility ID |
-| `inputText` | `inputText: "hello@test.com"` | Type into focused element |
-| `inputText` | `inputText: {text: "secret", mask: true}` | Type and mask in report |
-| `assertVisible` | `assertVisible: "Welcome"` | Assert text is on screen |
-| `assertNotVisible` | `assertNotVisible: "Error"` | Assert text is NOT on screen |
-| `scroll` | `scroll: down` | Scroll direction: `up` `down` `left` `right` |
-| `wait` | `wait: 2000` | Wait milliseconds |
-| `screenshot` | `screenshot: after-login` | Take a named screenshot |
-| `launchApp` | `launchApp: {clearState: true}` | Launch/relaunch the app |
-| `stopApp` | `stopApp` | Stop the app (mobile) |
-| `ai` | `ai: {goal: "...", max_steps: 20}` | AI-driven block |
-| `when` | `when: {platform: ios, do: [...]}` | Platform conditional |
+| Step               | Example                                   | Description                                  |
+| ------------------ | ----------------------------------------- | -------------------------------------------- |
+| `tapOn`            | `tapOn: "Log in"`                         | Tap element by visible text                  |
+| `tapOn`            | `tapOn: {id: "submit-btn"}`               | Tap by accessibility ID                      |
+| `inputText`        | `inputText: "hello@test.com"`             | Type into focused element                    |
+| `inputText`        | `inputText: {text: "secret", mask: true}` | Type and mask in report                      |
+| `assertVisible`    | `assertVisible: "Welcome"`                | Assert text is on screen                     |
+| `assertNotVisible` | `assertNotVisible: "Error"`               | Assert text is NOT on screen                 |
+| `scroll`           | `scroll: down`                            | Scroll direction: `up` `down` `left` `right` |
+| `wait`             | `wait: 2000`                              | Wait milliseconds                            |
+| `screenshot`       | `screenshot: after-login`                 | Take a named screenshot                      |
+| `launchApp`        | `launchApp: {clearState: true}`           | Launch/relaunch the app                      |
+| `stopApp`          | `stopApp`                                 | Stop the app (mobile)                        |
+| `ai`               | `ai: {goal: "...", max_steps: 20}`        | AI-driven block                              |
+| `when`             | `when: {platform: ios, do: [...]}`        | Platform conditional                         |
 
 ### Environment variables
 
@@ -180,11 +180,11 @@ AI steps hand control to Claude. Provide a `goal` describing what to accomplish 
 
 ### Supported platforms
 
-| Platform | Driver | What it controls |
-|----------|--------|------------------|
-| `web` | `agent-browser` | Headless Chrome via CDP |
-| `android` | `adb` | Android device/emulator via UI Automator |
-| `ios` | `idb` | iOS device/simulator via Facebook IDB |
+| Platform  | Driver          | What it controls                         |
+| --------- | --------------- | ---------------------------------------- |
+| `web`     | `agent-browser` | Headless Chrome via CDP                  |
+| `android` | `adb`           | Android device/emulator via UI Automator |
+| `ios`     | `idb`           | iOS device/simulator via Facebook IDB    |
 
 **Flutter web** works out of the box — Flutter generates a shadow DOM accessibility tree alongside its canvas, which agent-browser reads through Chrome DevTools accessibility APIs.
 
@@ -230,14 +230,14 @@ AI steps hand control to Claude. Provide a `goal` describing what to accomplish 
 2. **Analyzes gaps** — missing assertions, screenshots, wait steps
 3. **Asks clarifying questions** one at a time, across 6 categories:
 
-| Category | Example question |
-|----------|-----------------|
-| Item mechanics | "What types of items will the AI encounter?" |
-| Completion signals | "How will the AI know the flow is complete?" |
-| Strategy | "Should it always choose the correct action, or vary?" |
-| Side effects | "Are there secondary events triggered by actions?" |
-| Data extraction | "What data should be captured at the end?" |
-| Test data | "What shipping address should the AI use?" |
+| Category           | Example question                                       |
+| ------------------ | ------------------------------------------------------ |
+| Item mechanics     | "What types of items will the AI encounter?"           |
+| Completion signals | "How will the AI know the flow is complete?"           |
+| Strategy           | "Should it always choose the correct action, or vary?" |
+| Side effects       | "Are there secondary events triggered by actions?"     |
+| Data extraction    | "What data should be captured at the end?"             |
+| Test data          | "What shipping address should the AI use?"             |
 
 4. **Generates refined YAML** with structured goals and added declarative steps
 5. **Shows diff** for your approval before writing
@@ -325,12 +325,12 @@ AI steps include `subSteps` with per-task breakdowns and `iterations` with per-a
 /flowtest <yaml-file> [options]
 ```
 
-| Option | Description |
-|--------|-------------|
-| `<yaml-file>` | Path to flow YAML (required) |
-| `--platform <web\|android\|ios>` | Override platform from YAML |
-| `--device <id>` | Android serial or iOS UDID |
-| `--bundle <id>` | App bundle/package ID for mobile |
+| Option                           | Description                      |
+| -------------------------------- | -------------------------------- |
+| `<yaml-file>`                    | Path to flow YAML (required)     |
+| `--platform <web\|android\|ios>` | Override platform from YAML      |
+| `--device <id>`                  | Android serial or iOS UDID       |
+| `--bundle <id>`                  | App bundle/package ID for mobile |
 
 ### `/refine`
 
