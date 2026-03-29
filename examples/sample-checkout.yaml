@@ -1,0 +1,14 @@
+flow: sample-checkout
+platform: web
+app: https://demo-store.example.com
+
+steps:
+  - tapOn: "Sign in"
+  - inputText: "testuser@example.com"
+  - tapOn: "Log in"
+  - ai:
+      goal: "Buy something and check out"
+      max_steps: 30
+  - ai:
+      goal: "Go to account settings and update the profile"
+      max_steps: 25

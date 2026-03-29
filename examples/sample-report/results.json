@@ -1,0 +1,304 @@
+{
+  "flow": "sample-checkout",
+  "platform": "web",
+  "app": "https://demo-store.example.com",
+  "startedAt": "2026-03-29T10:30:00.000Z",
+  "endedAt": "2026-03-29T10:34:22.000Z",
+  "duration": 262000,
+  "healthScore": 1.0,
+  "totalSteps": 5,
+  "passedSteps": 5,
+  "failedSteps": 0,
+  "skippedSteps": 0,
+  "hasVideo": true,
+  "steps": [
+    {
+      "index": 0,
+      "type": "tapOn",
+      "input": "Sign in",
+      "result": "pass",
+      "duration": 1200,
+      "timestamp": 0,
+      "screenshot": null,
+      "retried": false,
+      "consoleLogs": []
+    },
+    {
+      "index": 1,
+      "type": "inputText",
+      "input": "testuser@example.com",
+      "result": "pass",
+      "duration": 800,
+      "timestamp": 1200,
+      "screenshot": null,
+      "retried": false,
+      "consoleLogs": []
+    },
+    {
+      "index": 2,
+      "type": "tapOn",
+      "input": "Log in",
+      "result": "pass",
+      "duration": 2500,
+      "timestamp": 2000,
+      "screenshot": null,
+      "retried": false,
+      "consoleLogs": []
+    },
+    {
+      "index": 3,
+      "type": "ai",
+      "input": "Buy something and check out",
+      "result": "pass",
+      "duration": 185000,
+      "timestamp": 4500,
+      "screenshot": "screenshots/step-03-ai-final.png",
+      "retried": false,
+      "consoleLogs": [],
+      "subSteps": [
+        {
+          "subIndex": 0,
+          "type": "browse",
+          "input": "Navigate to Products page and select first item",
+          "result": "pass",
+          "duration": 25000,
+          "retried": false,
+          "screenshot": "screenshots/step-03-sub-0-final.png",
+          "consoleLogs": [],
+          "iterations": [
+            {
+              "action": "tap",
+              "target": "Products",
+              "reason": "Navigate to product listing",
+              "screenshot": "screenshots/step-03-sub-0-iter-0.png"
+            },
+            {
+              "action": "tap",
+              "target": "Wireless Headphones",
+              "reason": "Select first available product",
+              "screenshot": "screenshots/step-03-sub-0-iter-1.png"
+            }
+          ]
+        },
+        {
+          "subIndex": 1,
+          "type": "cart",
+          "input": "Add to cart and verify cart badge updated",
+          "result": "pass",
+          "duration": 15000,
+          "retried": false,
+          "screenshot": "screenshots/step-03-sub-1-final.png",
+          "consoleLogs": [],
+          "iterations": [
+            {
+              "action": "tap",
+              "target": "Add to Cart",
+              "reason": "Add selected product to cart",
+              "screenshot": "screenshots/step-03-sub-1-iter-0.png"
+            },
+            {
+              "action": "snapshot",
+              "target": "Cart badge shows 1",
+              "reason": "Verify cart updated",
+              "screenshot": "screenshots/step-03-sub-1-iter-1.png"
+            }
+          ]
+        },
+        {
+          "subIndex": 2,
+          "type": "checkout",
+          "input": "Open cart and proceed to checkout",
+          "result": "pass",
+          "duration": 20000,
+          "retried": false,
+          "screenshot": "screenshots/step-03-sub-2-final.png",
+          "consoleLogs": [],
+          "iterations": [
+            {
+              "action": "tap",
+              "target": "Cart icon",
+              "reason": "Open cart drawer",
+              "screenshot": "screenshots/step-03-sub-2-iter-0.png"
+            },
+            {
+              "action": "tap",
+              "target": "Checkout",
+              "reason": "Proceed to checkout page",
+              "screenshot": "screenshots/step-03-sub-2-iter-1.png"
+            }
+          ]
+        },
+        {
+          "subIndex": 3,
+          "type": "form",
+          "input": "Fill shipping address form",
+          "result": "pass",
+          "duration": 35000,
+          "retried": false,
+          "screenshot": "screenshots/step-03-sub-3-final.png",
+          "consoleLogs": [],
+          "iterations": [
+            {
+              "action": "type",
+              "target": "Full Name: Jane Doe",
+              "reason": "Fill name field",
+              "screenshot": "screenshots/step-03-sub-3-iter-0.png"
+            },
+            {
+              "action": "type",
+              "target": "Address: 123 Main St",
+              "reason": "Fill address field",
+              "screenshot": "screenshots/step-03-sub-3-iter-1.png"
+            },
+            {
+              "action": "type",
+              "target": "City: San Francisco",
+              "reason": "Fill city field",
+              "screenshot": "screenshots/step-03-sub-3-iter-2.png"
+            },
+            {
+              "action": "tap",
+              "target": "Continue to Payment",
+              "reason": "Submit shipping form",
+              "screenshot": "screenshots/step-03-sub-3-iter-3.png"
+            }
+          ]
+        },
+        {
+          "subIndex": 4,
+          "type": "payment",
+          "input": "Enter credit card details and place order",
+          "result": "pass",
+          "duration": 40000,
+          "retried": false,
+          "screenshot": "screenshots/step-03-sub-4-final.png",
+          "consoleLogs": [],
+          "iterations": [
+            {
+              "action": "type",
+              "target": "Card: 4242 4242 4242 4242",
+              "reason": "Enter test card number",
+              "screenshot": "screenshots/step-03-sub-4-iter-0.png"
+            },
+            {
+              "action": "type",
+              "target": "Expiry: 12/28, CVC: 123",
+              "reason": "Enter card expiry and CVC",
+              "screenshot": "screenshots/step-03-sub-4-iter-1.png"
+            },
+            {
+              "action": "tap",
+              "target": "Place Order",
+              "reason": "Submit payment",
+              "screenshot": "screenshots/step-03-sub-4-iter-2.png"
+            }
+          ]
+        },
+        {
+          "subIndex": 5,
+          "type": "verify",
+          "input": "Confirm order success — Order #10482 confirmed",
+          "result": "pass",
+          "duration": 10000,
+          "retried": false,
+          "screenshot": "screenshots/step-03-sub-5-final.png",
+          "consoleLogs": [],
+          "iterations": [
+            {
+              "action": "snapshot",
+              "target": "Order confirmed #10482",
+              "reason": "Verify order confirmation page shows success",
+              "screenshot": "screenshots/step-03-sub-5-iter-0.png"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "index": 4,
+      "type": "ai",
+      "input": "Go to account settings and update the profile",
+      "result": "pass",
+      "duration": 72000,
+      "timestamp": 189500,
+      "screenshot": "screenshots/step-04-ai-final.png",
+      "retried": false,
+      "consoleLogs": [],
+      "subSteps": [
+        {
+          "subIndex": 0,
+          "type": "navigate",
+          "input": "Navigate to Account Settings page",
+          "result": "pass",
+          "duration": 12000,
+          "retried": false,
+          "screenshot": "screenshots/step-04-sub-0-final.png",
+          "consoleLogs": [],
+          "iterations": [
+            {
+              "action": "tap",
+              "target": "Account menu",
+              "reason": "Open account dropdown",
+              "screenshot": "screenshots/step-04-sub-0-iter-0.png"
+            },
+            {
+              "action": "tap",
+              "target": "Settings",
+              "reason": "Navigate to settings page",
+              "screenshot": "screenshots/step-04-sub-0-iter-1.png"
+            }
+          ]
+        },
+        {
+          "subIndex": 1,
+          "type": "form",
+          "input": "Update display name and bio",
+          "result": "pass",
+          "duration": 30000,
+          "retried": false,
+          "screenshot": "screenshots/step-04-sub-1-final.png",
+          "consoleLogs": [],
+          "iterations": [
+            {
+              "action": "type",
+              "target": "Display Name: Jane D.",
+              "reason": "Update display name field",
+              "screenshot": "screenshots/step-04-sub-1-iter-0.png"
+            },
+            {
+              "action": "type",
+              "target": "Bio: Shopping enthusiast",
+              "reason": "Update bio field",
+              "screenshot": "screenshots/step-04-sub-1-iter-1.png"
+            },
+            {
+              "action": "tap",
+              "target": "Save Changes",
+              "reason": "Submit profile form",
+              "screenshot": "screenshots/step-04-sub-1-iter-2.png"
+            }
+          ]
+        },
+        {
+          "subIndex": 2,
+          "type": "verify",
+          "input": "Verify 'Profile updated' success message",
+          "result": "pass",
+          "duration": 8000,
+          "retried": false,
+          "screenshot": "screenshots/step-04-sub-2-final.png",
+          "consoleLogs": [],
+          "iterations": [
+            {
+              "action": "snapshot",
+              "target": "Profile updated successfully",
+              "reason": "Confirm success toast appeared",
+              "screenshot": "screenshots/step-04-sub-2-iter-0.png"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "failures": []
+}

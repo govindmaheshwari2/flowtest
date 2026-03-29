@@ -1,0 +1,1515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Flowtest Report</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:          #0a0a0f;
+      --surface:     #111118;
+      --surface2:    #1a1a24;
+      --surface3:    #22222e;
+      --border:      #2a2a3a;
+      --text:        #c8c8d4;
+      --text-dim:    #6a6a7a;
+      --text-bright: #eeeef4;
+      --pass:        #00ff6a;
+      --pass-dim:    rgba(0,255,106,0.12);
+      --fail:        #ff3355;
+      --fail-dim:    rgba(255,51,85,0.10);
+      --retry:       #ffaa00;
+      --retry-dim:   rgba(255,170,0,0.10);
+      --accent:      #00ccff;
+      --accent-dim:  rgba(0,204,255,0.08);
+      --glow-pass:   0 0 20px rgba(0,255,106,0.3), 0 0 40px rgba(0,255,106,0.1);
+      --glow-fail:   0 0 20px rgba(255,51,85,0.3), 0 0 40px rgba(255,51,85,0.1);
+      --glow-accent: 0 0 20px rgba(0,204,255,0.2);
+      --font-mono:   'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+      --font-display:'Syne', 'SF Pro Display', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 1.6;
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* scan-line overlay */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 10000;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.03) 2px,
+        rgba(0,0,0,0.03) 4px
+      );
+    }
+
+    /* noise texture */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.018;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: 256px 256px;
+    }
+
+    /* ── layout ── */
+    #app {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 32px 24px 80px;
+      position: relative;
+    }
+
+    /* ── animations ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes glowPulse {
+      0%, 100% { opacity: 1; }
+      50%      { opacity: 0.6; }
+    }
+    @keyframes fillBar {
+      from { width: 0; }
+    }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(-8px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes scanFlash {
+      0%   { opacity: 0; }
+      10%  { opacity: 0.04; }
+      100% { opacity: 0; }
+    }
+
+    .animate-in {
+      animation: fadeUp 0.5s ease-out both;
+    }
+
+    /* ── status indicator ── */
+    .status-beacon {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+      animation: glowPulse 2s ease-in-out infinite;
+    }
+    .status-beacon.pass { background: var(--pass); box-shadow: var(--glow-pass); }
+    .status-beacon.fail { background: var(--fail); box-shadow: var(--glow-fail); }
+
+    /* ── header ── */
+    .header {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      padding: 28px 32px;
+      margin-bottom: 2px;
+      position: relative;
+      overflow: hidden;
+      animation: fadeUp 0.4s ease-out both;
+    }
+    .header::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      opacity: 0.6;
+    }
+
+    .header-row-1 {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    .flow-name {
+      font-family: var(--font-display);
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--text-bright);
+      letter-spacing: -0.02em;
+      flex: 1 1 auto;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 2px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      font-family: var(--font-mono);
+    }
+    .badge-pass    { background: var(--pass-dim); color: var(--pass); border: 1px solid rgba(0,255,106,0.25); }
+    .badge-fail    { background: var(--fail-dim); color: var(--fail); border: 1px solid rgba(255,51,85,0.25); }
+    .badge-retry   { background: var(--retry-dim); color: var(--retry); border: 1px solid rgba(255,170,0,0.25); }
+    .badge-platform {
+      background: var(--accent-dim);
+      color: var(--accent);
+      border: 1px solid rgba(0,204,255,0.2);
+    }
+
+    /* stats grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .stat-cell {
+      background: var(--surface);
+      padding: 14px 18px;
+    }
+    .stat-label {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-dim);
+      margin-bottom: 4px;
+    }
+    .stat-value {
+      font-family: var(--font-display);
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--text-bright);
+    }
+    .stat-value.pass { color: var(--pass); }
+    .stat-value.fail { color: var(--fail); }
+
+    /* health bar */
+    .health-track {
+      width: 100%;
+      height: 4px;
+      background: var(--surface3);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+    .health-fill {
+      height: 100%;
+      border-radius: 2px;
+      animation: fillBar 1s ease-out both;
+      animation-delay: 0.6s;
+    }
+
+    /* ── summary strip ── */
+    .summary-strip {
+      display: flex;
+      border: 1px solid var(--border);
+      border-top: none;
+      border-radius: 0 0 2px 2px;
+      overflow: hidden;
+      margin-bottom: 20px;
+      animation: fadeUp 0.4s ease-out both;
+      animation-delay: 0.1s;
+    }
+    .summary-cell {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 16px;
+      background: var(--surface);
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      border-right: 1px solid var(--border);
+    }
+    .summary-cell:last-child { border-right: none; }
+    .summary-cell strong { color: var(--text); font-weight: 600; }
+    .summary-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .summary-dot.pass    { background: var(--pass); box-shadow: 0 0 6px rgba(0,255,106,0.4); }
+    .summary-dot.fail    { background: var(--fail); box-shadow: 0 0 6px rgba(255,51,85,0.4); }
+    .summary-dot.skipped { background: var(--text-dim); }
+
+    /* ── video ── */
+    .video-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      padding: 20px;
+      margin-bottom: 20px;
+      animation: fadeUp 0.4s ease-out both;
+      animation-delay: 0.2s;
+    }
+    .panel-label {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--accent);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .panel-label::before {
+      content: '';
+      width: 3px;
+      height: 12px;
+      background: var(--accent);
+      border-radius: 1px;
+    }
+    .video-panel video {
+      width: 100%;
+      border-radius: 2px;
+      display: block;
+      border: 1px solid var(--border);
+    }
+
+    /* ── steps ── */
+    .steps-panel {
+      animation: fadeUp 0.4s ease-out both;
+      animation-delay: 0.3s;
+    }
+    .steps-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 2px 2px 0 0;
+    }
+    .steps-header .panel-label { margin-bottom: 0; }
+    .steps-count {
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      letter-spacing: 0.05em;
+    }
+
+    .steps-list {
+      border: 1px solid var(--border);
+      border-top: none;
+      border-radius: 0 0 2px 2px;
+      overflow: hidden;
+    }
+
+    /* ── step row ── */
+    .step-row {
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: background 0.15s;
+      position: relative;
+    }
+    .step-row:last-child { border-bottom: none; }
+    .step-row:hover { background: rgba(255,255,255,0.02); }
+    .step-row.failed { background: var(--fail-dim); }
+    .step-row.passed {}
+
+    /* circuit trace on left */
+    .step-row::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: var(--border);
+      transition: background 0.2s;
+    }
+    .step-row.passed::before { background: var(--pass); box-shadow: 0 0 8px rgba(0,255,106,0.3); }
+    .step-row.failed::before { background: var(--fail); box-shadow: 0 0 8px rgba(255,51,85,0.3); }
+
+    .step-summary {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    .step-index {
+      width: 48px;
+      text-align: center;
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      padding: 12px 0;
+      flex-shrink: 0;
+      border-right: 1px solid var(--border);
+    }
+
+    .step-type {
+      width: 120px;
+      min-width: 120px;
+      padding: 12px 14px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--accent);
+      flex-shrink: 0;
+      border-right: 1px solid var(--border);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .step-type.type-ai {
+      color: var(--retry);
+    }
+
+    .step-input {
+      flex: 1;
+      min-width: 0;
+      padding: 12px 14px;
+      font-size: 0.78rem;
+      color: var(--text);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .step-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 14px;
+      flex-shrink: 0;
+    }
+
+    .step-timestamp {
+      font-size: 0.68rem;
+      color: var(--accent);
+      min-width: 44px;
+      text-align: center;
+      font-variant-numeric: tabular-nums;
+      padding: 2px 6px;
+      border-radius: 2px;
+      background: var(--accent-dim);
+      border: 1px solid rgba(0,204,255,0.15);
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+      letter-spacing: 0.03em;
+    }
+    .step-timestamp:hover {
+      background: rgba(0,204,255,0.18);
+      border-color: var(--accent);
+    }
+
+    .step-duration {
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      min-width: 50px;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .step-chevron {
+      color: var(--text-dim);
+      font-size: 0.6rem;
+      transition: transform 0.2s;
+      margin-left: 4px;
+    }
+    .step-row.expanded .step-chevron { transform: rotate(90deg); }
+
+    /* expanded detail */
+    .step-detail {
+      display: none;
+      padding: 16px 20px 20px 48px;
+      background: rgba(0,0,0,0.2);
+      border-top: 1px solid var(--border);
+    }
+    .step-row.expanded .step-detail { display: block; }
+
+    .detail-grid { display: flex; gap: 16px; flex-wrap: wrap; }
+
+    .detail-screenshot {
+      width: 200px;
+      flex-shrink: 0;
+      cursor: zoom-in;
+      border-radius: 2px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      transition: border-color 0.2s;
+    }
+    .detail-screenshot:hover { border-color: var(--accent); }
+    .detail-screenshot img {
+      width: 100%;
+      display: block;
+    }
+    .detail-screenshot .ss-label {
+      font-size: 0.6rem;
+      color: var(--text-dim);
+      padding: 4px 8px;
+      background: var(--surface);
+      text-align: center;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    /* ai sub-steps */
+    .sub-steps-list {
+      border-top: 1px solid var(--border);
+      display: none;
+    }
+    .step-row.expanded > .sub-steps-list {
+      display: block;
+    }
+    .sub-step-row {
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .sub-step-row:last-child { border-bottom: none; }
+    .sub-step-row:hover { background: rgba(255,255,255,0.02); }
+    .sub-step-row.passed::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+      background: var(--pass);
+      box-shadow: 0 0 8px rgba(0,255,106,0.3);
+    }
+    .sub-step-row.failed::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+      background: var(--fail);
+      box-shadow: 0 0 8px rgba(255,51,85,0.3);
+    }
+    .sub-step-row.failed { background: var(--fail-dim); }
+    .sub-step-row .step-summary {
+      padding-left: 28px;
+    }
+    .sub-step-row .step-index {
+      width: 56px;
+      min-width: 56px;
+      font-size: 0.65rem;
+      color: var(--text-dim);
+      opacity: 0.7;
+    }
+    .sub-step-row .step-type {
+      width: 100px;
+      min-width: 100px;
+      font-size: 0.7rem;
+    }
+    .sub-step-row .step-input {
+      font-size: 0.73rem;
+      min-width: 0;
+    }
+    .sub-step-row .step-detail {
+      display: none;
+      padding-left: 48px;
+    }
+    .sub-step-row.expanded .step-detail {
+      display: block;
+    }
+    .sub-step-row.expanded .step-chevron {
+      transform: rotate(90deg);
+    }
+
+    /* ai iterations */
+    .iterations-list { flex: 1; min-width: 240px; }
+    .iterations-list .panel-label { margin-bottom: 8px; }
+
+    .iteration-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      padding: 10px 12px;
+      margin-bottom: 6px;
+      display: flex;
+      gap: 12px;
+      animation: slideIn 0.3s ease-out both;
+    }
+    .iteration-num {
+      font-size: 0.7rem;
+      font-weight: 600;
+      color: var(--accent);
+      min-width: 24px;
+      padding-top: 1px;
+    }
+    .iteration-body { flex: 1; font-size: 0.75rem; }
+    .iteration-body .iter-row {
+      margin-bottom: 3px;
+      display: flex;
+      gap: 6px;
+    }
+    .iter-label {
+      color: var(--text-dim);
+      min-width: 48px;
+      flex-shrink: 0;
+    }
+    .iter-value { color: var(--text); }
+
+    .iteration-thumb {
+      width: 72px;
+      flex-shrink: 0;
+      border-radius: 2px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      cursor: zoom-in;
+      transition: border-color 0.2s;
+    }
+    .iteration-thumb:hover { border-color: var(--accent); }
+    .iteration-thumb img { width: 100%; display: block; }
+
+    /* error box */
+    .error-box {
+      background: var(--fail-dim);
+      border: 1px solid rgba(255,51,85,0.3);
+      border-radius: 2px;
+      padding: 12px 14px;
+      margin-top: 12px;
+      font-size: 0.75rem;
+    }
+    .error-box .err-row {
+      margin-bottom: 4px;
+      display: flex;
+      gap: 8px;
+    }
+    .err-label {
+      color: var(--fail);
+      font-weight: 600;
+      min-width: 60px;
+      flex-shrink: 0;
+      text-transform: uppercase;
+      font-size: 0.65rem;
+      letter-spacing: 0.05em;
+      padding-top: 1px;
+    }
+
+    /* ── console logs (per-step) ── */
+    .step-logs {
+      margin-top: 12px;
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .step-logs-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 10px;
+      background: var(--surface2);
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-dim);
+    }
+    .step-logs-header .log-count {
+      font-variant-numeric: tabular-nums;
+    }
+    .log-entry {
+      display: flex;
+      gap: 0;
+      font-size: 0.72rem;
+      border-top: 1px solid var(--border);
+      line-height: 1.5;
+    }
+    .log-level {
+      width: 52px;
+      padding: 4px 8px;
+      text-align: center;
+      font-weight: 600;
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      flex-shrink: 0;
+      border-right: 1px solid var(--border);
+    }
+    .log-level.level-error { color: var(--fail); background: var(--fail-dim); }
+    .log-level.level-warn  { color: var(--retry); background: var(--retry-dim); }
+    .log-level.level-log   { color: var(--text-dim); }
+    .log-level.level-info  { color: var(--accent); background: var(--accent-dim); }
+    .log-message {
+      flex: 1;
+      padding: 4px 10px;
+      color: var(--text);
+      word-break: break-all;
+      white-space: pre-wrap;
+    }
+    .log-time {
+      width: 52px;
+      padding: 4px 8px;
+      color: var(--text-dim);
+      font-size: 0.65rem;
+      text-align: right;
+      flex-shrink: 0;
+      font-variant-numeric: tabular-nums;
+      border-left: 1px solid var(--border);
+    }
+
+    /* ── console panel (combined) ── */
+    .console-panel {
+      margin-top: 20px;
+      animation: fadeUp 0.4s ease-out both;
+      animation-delay: 0.4s;
+    }
+    .console-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 2px 2px 0 0;
+    }
+    .console-header .panel-label { margin-bottom: 0; }
+    .console-filters {
+      display: flex;
+      gap: 4px;
+    }
+    .console-filter-btn {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      padding: 2px 8px;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      transition: background 0.15s, color 0.15s;
+    }
+    .console-filter-btn:hover { background: var(--surface3); }
+    .console-filter-btn.active { color: var(--text-bright); background: var(--surface3); border-color: var(--accent); }
+    .console-filter-btn.active.filter-error { border-color: var(--fail); color: var(--fail); }
+    .console-filter-btn.active.filter-warn { border-color: var(--retry); color: var(--retry); }
+
+    .console-body {
+      border: 1px solid var(--border);
+      border-top: none;
+      border-radius: 0 0 2px 2px;
+      max-height: 400px;
+      overflow-y: auto;
+      background: var(--surface);
+    }
+    .console-body::-webkit-scrollbar { width: 6px; }
+    .console-body::-webkit-scrollbar-track { background: var(--surface); }
+    .console-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    .console-log-entry {
+      display: flex;
+      gap: 0;
+      font-size: 0.72rem;
+      border-bottom: 1px solid var(--border);
+      line-height: 1.5;
+      cursor: pointer;
+      transition: background 0.1s;
+    }
+    .console-log-entry:hover { background: rgba(255,255,255,0.02); }
+    .console-log-entry:last-child { border-bottom: none; }
+    .console-log-step {
+      width: 48px;
+      padding: 4px 8px;
+      text-align: center;
+      font-size: 0.65rem;
+      color: var(--text-dim);
+      flex-shrink: 0;
+      border-right: 1px solid var(--border);
+      font-variant-numeric: tabular-nums;
+    }
+    .console-empty {
+      padding: 20px;
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 0.75rem;
+      font-style: italic;
+    }
+
+    /* ── lightbox ── */
+    #lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.92);
+      z-index: 99999;
+      align-items: center;
+      justify-content: center;
+      cursor: zoom-out;
+      backdrop-filter: blur(8px);
+    }
+    #lightbox.active { display: flex; }
+    #lightbox img {
+      max-width: 92vw;
+      max-height: 92vh;
+      border-radius: 2px;
+      display: block;
+      border: 1px solid var(--border);
+    }
+
+    /* ── footer ── */
+    .report-footer {
+      text-align: center;
+      padding: 32px 0 0;
+      font-size: 0.65rem;
+      color: var(--text-dim);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .report-footer a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    /* ── no-data ── */
+    .empty-msg {
+      color: var(--text-dim);
+      font-size: 0.78rem;
+      font-style: italic;
+      padding: 20px;
+      text-align: center;
+    }
+
+    /* ── responsive ── */
+    @media (max-width: 640px) {
+      #app { padding: 16px 12px 60px; }
+      .header { padding: 20px; }
+      .flow-name { font-size: 1.2rem; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .step-type { width: 80px; padding: 10px 8px; }
+      .step-index { width: 36px; }
+      .step-detail { padding-left: 20px; }
+      .detail-screenshot { width: 140px; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="app"></div>
+
+<div id="lightbox" onclick="hideLightbox()">
+  <img id="lightbox-img" src="" alt="screenshot" />
+</div>
+
+<script>
+  const DATA = {
+  "flow": "sample-checkout",
+  "platform": "web",
+  "app": "https://demo-store.example.com",
+  "startedAt": "2026-03-29T10:30:00.000Z",
+  "endedAt": "2026-03-29T10:34:22.000Z",
+  "duration": 262000,
+  "healthScore": 1.0,
+  "totalSteps": 5,
+  "passedSteps": 5,
+  "failedSteps": 0,
+  "skippedSteps": 0,
+  "hasVideo": true,
+  "steps": [
+    {
+      "index": 0,
+      "type": "tapOn",
+      "input": "Sign in",
+      "result": "pass",
+      "duration": 1200,
+      "timestamp": 0,
+      "screenshot": null,
+      "retried": false,
+      "consoleLogs": []
+    },
+    {
+      "index": 1,
+      "type": "inputText",
+      "input": "testuser@example.com",
+      "result": "pass",
+      "duration": 800,
+      "timestamp": 1200,
+      "screenshot": null,
+      "retried": false,
+      "consoleLogs": []
+    },
+    {
+      "index": 2,
+      "type": "tapOn",
+      "input": "Log in",
+      "result": "pass",
+      "duration": 2500,
+      "timestamp": 2000,
+      "screenshot": null,
+      "retried": false,
+      "consoleLogs": []
+    },
+    {
+      "index": 3,
+      "type": "ai",
+      "input": "Buy something and check out",
+      "result": "pass",
+      "duration": 185000,
+      "timestamp": 4500,
+      "screenshot": "screenshots/step-03-ai-final.png",
+      "retried": false,
+      "consoleLogs": [],
+      "subSteps": [
+        {
+          "subIndex": 0,
+          "type": "browse",
+          "input": "Navigate to Products page and select first item",
+          "result": "pass",
+          "duration": 25000,
+          "retried": false,
+          "screenshot": "screenshots/step-03-sub-0-final.png",
+          "consoleLogs": [],
+          "iterations": [
+            {
+              "action": "tap",
+              "target": "Products",
+              "reason": "Navigate to product listing",
+              "screenshot": "screenshots/step-03-sub-0-iter-0.png"
+            },
+            {
+              "action": "tap",
+              "target": "Wireless Headphones",
+              "reason": "Select first available product",
+              "screenshot": "screenshots/step-03-sub-0-iter-1.png"
+            }
+          ]
+        },
+        {
+          "subIndex": 1,
+          "type": "cart",
+          "input": "Add to cart and verify cart badge updated",
+          "result": "pass",
+          "duration": 15000,
+          "retried": false,
+          "screenshot": "screenshots/step-03-sub-1-final.png",
+          "consoleLogs": [],
+          "iterations": [
+            {
+              "action": "tap",
+              "target": "Add to Cart",
+              "reason": "Add selected product to cart",
+              "screenshot": "screenshots/step-03-sub-1-iter-0.png"
+            },
+            {
+              "action": "snapshot",
+              "target": "Cart badge shows 1",
+              "reason": "Verify cart updated",
+              "screenshot": "screenshots/step-03-sub-1-iter-1.png"
+            }
+          ]
+        },
+        {
+          "subIndex": 2,
+          "type": "checkout",
+          "input": "Open cart and proceed to checkout",
+          "result": "pass",
+          "duration": 20000,
+          "retried": false,
+          "screenshot": "screenshots/step-03-sub-2-final.png",
+          "consoleLogs": [],
+          "iterations": [
+            {
+              "action": "tap",
+              "target": "Cart icon",
+              "reason": "Open cart drawer",
+              "screenshot": "screenshots/step-03-sub-2-iter-0.png"
+            },
+            {
+              "action": "tap",
+              "target": "Checkout",
+              "reason": "Proceed to checkout page",
+              "screenshot": "screenshots/step-03-sub-2-iter-1.png"
+            }
+          ]
+        },
+        {
+          "subIndex": 3,
+          "type": "form",
+          "input": "Fill shipping address form",
+          "result": "pass",
+          "duration": 35000,
+          "retried": false,
+          "screenshot": "screenshots/step-03-sub-3-final.png",
+          "consoleLogs": [],
+          "iterations": [
+            {
+              "action": "type",
+              "target": "Full Name: Jane Doe",
+              "reason": "Fill name field",
+              "screenshot": "screenshots/step-03-sub-3-iter-0.png"
+            },
+            {
+              "action": "type",
+              "target": "Address: 123 Main St",
+              "reason": "Fill address field",
+              "screenshot": "screenshots/step-03-sub-3-iter-1.png"
+            },
+            {
+              "action": "type",
+              "target": "City: San Francisco",
+              "reason": "Fill city field",
+              "screenshot": "screenshots/step-03-sub-3-iter-2.png"
+            },
+            {
+              "action": "tap",
+              "target": "Continue to Payment",
+              "reason": "Submit shipping form",
+              "screenshot": "screenshots/step-03-sub-3-iter-3.png"
+            }
+          ]
+        },
+        {
+          "subIndex": 4,
+          "type": "payment",
+          "input": "Enter credit card details and place order",
+          "result": "pass",
+          "duration": 40000,
+          "retried": false,
+          "screenshot": "screenshots/step-03-sub-4-final.png",
+          "consoleLogs": [],
+          "iterations": [
+            {
+              "action": "type",
+              "target": "Card: 4242 4242 4242 4242",
+              "reason": "Enter test card number",
+              "screenshot": "screenshots/step-03-sub-4-iter-0.png"
+            },
+            {
+              "action": "type",
+              "target": "Expiry: 12/28, CVC: 123",
+              "reason": "Enter card expiry and CVC",
+              "screenshot": "screenshots/step-03-sub-4-iter-1.png"
+            },
+            {
+              "action": "tap",
+              "target": "Place Order",
+              "reason": "Submit payment",
+              "screenshot": "screenshots/step-03-sub-4-iter-2.png"
+            }
+          ]
+        },
+        {
+          "subIndex": 5,
+          "type": "verify",
+          "input": "Confirm order success — Order #10482 confirmed",
+          "result": "pass",
+          "duration": 10000,
+          "retried": false,
+          "screenshot": "screenshots/step-03-sub-5-final.png",
+          "consoleLogs": [],
+          "iterations": [
+            {
+              "action": "snapshot",
+              "target": "Order confirmed #10482",
+              "reason": "Verify order confirmation page shows success",
+              "screenshot": "screenshots/step-03-sub-5-iter-0.png"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "index": 4,
+      "type": "ai",
+      "input": "Go to account settings and update the profile",
+      "result": "pass",
+      "duration": 72000,
+      "timestamp": 189500,
+      "screenshot": "screenshots/step-04-ai-final.png",
+      "retried": false,
+      "consoleLogs": [],
+      "subSteps": [
+        {
+          "subIndex": 0,
+          "type": "navigate",
+          "input": "Navigate to Account Settings page",
+          "result": "pass",
+          "duration": 12000,
+          "retried": false,
+          "screenshot": "screenshots/step-04-sub-0-final.png",
+          "consoleLogs": [],
+          "iterations": [
+            {
+              "action": "tap",
+              "target": "Account menu",
+              "reason": "Open account dropdown",
+              "screenshot": "screenshots/step-04-sub-0-iter-0.png"
+            },
+            {
+              "action": "tap",
+              "target": "Settings",
+              "reason": "Navigate to settings page",
+              "screenshot": "screenshots/step-04-sub-0-iter-1.png"
+            }
+          ]
+        },
+        {
+          "subIndex": 1,
+          "type": "form",
+          "input": "Update display name and bio",
+          "result": "pass",
+          "duration": 30000,
+          "retried": false,
+          "screenshot": "screenshots/step-04-sub-1-final.png",
+          "consoleLogs": [],
+          "iterations": [
+            {
+              "action": "type",
+              "target": "Display Name: Jane D.",
+              "reason": "Update display name field",
+              "screenshot": "screenshots/step-04-sub-1-iter-0.png"
+            },
+            {
+              "action": "type",
+              "target": "Bio: Shopping enthusiast",
+              "reason": "Update bio field",
+              "screenshot": "screenshots/step-04-sub-1-iter-1.png"
+            },
+            {
+              "action": "tap",
+              "target": "Save Changes",
+              "reason": "Submit profile form",
+              "screenshot": "screenshots/step-04-sub-1-iter-2.png"
+            }
+          ]
+        },
+        {
+          "subIndex": 2,
+          "type": "verify",
+          "input": "Verify 'Profile updated' success message",
+          "result": "pass",
+          "duration": 8000,
+          "retried": false,
+          "screenshot": "screenshots/step-04-sub-2-final.png",
+          "consoleLogs": [],
+          "iterations": [
+            {
+              "action": "snapshot",
+              "target": "Profile updated successfully",
+              "reason": "Confirm success toast appeared",
+              "screenshot": "screenshots/step-04-sub-2-iter-0.png"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "failures": []
+}
+;
+
+  /* ── helpers ── */
+
+  function formatDuration(ms) {
+    if (ms == null) return '--';
+    if (ms < 1000) return ms + 'ms';
+    if (ms < 60000) return (ms / 1000).toFixed(1) + 's';
+    const m = Math.floor(ms / 60000);
+    const s = Math.round((ms % 60000) / 1000);
+    return m + 'm ' + s + 's';
+  }
+
+  function healthColor(score) {
+    if (score >= 0.9) return 'var(--pass)';
+    if (score >= 0.7) return 'var(--retry)';
+    return 'var(--fail)';
+  }
+
+  function healthClass(score) {
+    if (score >= 0.9) return 'pass';
+    if (score >= 0.7) return '';
+    return 'fail';
+  }
+
+  function resultBadge(result) {
+    if (!result) return '';
+    const cls = result === 'pass' ? 'badge-pass' : result === 'fail' ? 'badge-fail' : 'badge-retry';
+    return '<span class="badge ' + cls + '">' + result + '</span>';
+  }
+
+  function stepInput(step) {
+    if (step.type === 'ai')   return step.goal || step.input || '';
+    if (step.type === 'wait') return (step.input || '') + 'ms';
+    return step.input || '';
+  }
+
+  function escHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function padIndex(n) {
+    return String(n + 1).padStart(2, '0');
+  }
+
+  function formatTimestamp(ms) {
+    if (ms == null) return '--:--';
+    var totalSec = Math.floor(ms / 1000);
+    var m = Math.floor(totalSec / 60);
+    var s = totalSec % 60;
+    return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+  }
+
+  /* ── renderers ── */
+
+  function renderAiIterations(iterations) {
+    if (!iterations || iterations.length === 0) return '';
+    var items = iterations.map(function(it, i) {
+      var thumb = it.screenshot
+        ? '<div class="iteration-thumb" onclick="event.stopPropagation();showLightbox(\'' + escHtml(it.screenshot) + '\')"><img src="' + escHtml(it.screenshot) + '" alt="iter" /></div>'
+        : '';
+      return '<div class="iteration-item" style="animation-delay:' + (i * 0.05) + 's">' +
+        '<div class="iteration-num">#' + (i + 1) + '</div>' +
+        '<div class="iteration-body">' +
+          (it.action ? '<div class="iter-row"><span class="iter-label">action</span><span class="iter-value">' + escHtml(it.action) + '</span></div>' : '') +
+          (it.target ? '<div class="iter-row"><span class="iter-label">target</span><span class="iter-value">' + escHtml(it.target) + '</span></div>' : '') +
+          (it.reason ? '<div class="iter-row"><span class="iter-label">reason</span><span class="iter-value">' + escHtml(it.reason) + '</span></div>' : '') +
+        '</div>' +
+        thumb +
+      '</div>';
+    }).join('');
+    return '<div class="iterations-list"><div class="panel-label">AI Iterations</div>' + items + '</div>';
+  }
+
+  function renderStepLogs(step) {
+    var logs = step.consoleLogs;
+    if (!logs || logs.length === 0) return '';
+    var entries = logs.map(function(log) {
+      var levelClass = 'level-' + (log.level || 'log');
+      return '<div class="log-entry">' +
+        '<span class="log-level ' + levelClass + '">' + escHtml(log.level || 'log') + '</span>' +
+        '<span class="log-message">' + escHtml(log.message || '') + '</span>' +
+        (log.timestamp ? '<span class="log-time">' + formatTimestamp(log.timestamp - (DATA.startedAtMs || 0)) + '</span>' : '') +
+      '</div>';
+    }).join('');
+    var errorCount = logs.filter(function(l) { return l.level === 'error'; }).length;
+    var countLabel = logs.length + ' log' + (logs.length !== 1 ? 's' : '') + (errorCount ? ' (' + errorCount + ' error' + (errorCount !== 1 ? 's' : '') + ')' : '');
+    return '<div class="step-logs">' +
+      '<div class="step-logs-header"><span>Console</span><span class="log-count">' + countLabel + '</span></div>' +
+      entries +
+    '</div>';
+  }
+
+  function renderFailure(step) {
+    if (!DATA.failures) return '';
+    var f = DATA.failures.find(function(x) { return x.stepIndex === step.index; });
+    if (!f) return '';
+    return '<div class="error-box">' +
+      '<div class="err-row"><span class="err-label">type</span><span>' + escHtml(f.type || '') + '</span></div>' +
+      (f.expected ? '<div class="err-row"><span class="err-label">expected</span><span>' + escHtml(f.expected) + '</span></div>' : '') +
+      (f.actual   ? '<div class="err-row"><span class="err-label">actual</span><span>' + escHtml(f.actual) + '</span></div>' : '') +
+    '</div>';
+  }
+
+  function renderSubStep(sub, parentIndex) {
+    var failed = sub.result === 'fail';
+    var rowClass = failed ? 'sub-step-row failed' : sub.result === 'pass' ? 'sub-step-row passed' : 'sub-step-row';
+    var inputText = escHtml(sub.input || '');
+    var retriedBadge = sub.retried ? '<span class="badge badge-retry">retry</span>' : '';
+    var subId = parentIndex + '-' + sub.subIndex;
+
+    var screenshotHtml = sub.screenshot
+      ? '<div class="detail-screenshot" onclick="event.stopPropagation();showLightbox(\'' + escHtml(sub.screenshot) + '\')">' +
+          '<img src="' + escHtml(sub.screenshot) + '" alt="screenshot" />' +
+          '<div class="ss-label">capture</div>' +
+        '</div>'
+      : '';
+
+    var iterationsHtml = renderAiIterations(sub.iterations);
+    var logsHtml = renderStepLogs(sub);
+    var hasDetail = screenshotHtml || iterationsHtml || logsHtml;
+
+    return '<div class="' + rowClass + '" id="step-' + subId + '" onclick="event.stopPropagation();toggleSubStep(\'' + subId + '\')">' +
+      '<div class="step-summary">' +
+        '<span class="step-index">' + padIndex(parentIndex) + '.' + (sub.subIndex + 1) + '</span>' +
+        '<span class="step-type type-ai">' + escHtml(sub.type || 'ai') + '</span>' +
+        '<span class="step-input" title="' + inputText + '">' + inputText + '</span>' +
+        '<span class="step-meta">' +
+          resultBadge(sub.result) +
+          retriedBadge +
+          '<span class="step-duration">' + formatDuration(sub.duration) + '</span>' +
+          (hasDetail ? '<span class="step-chevron">&#9658;</span>' : '') +
+        '</span>' +
+      '</div>' +
+      (hasDetail ? '<div class="step-detail">' +
+        '<div class="detail-grid">' + screenshotHtml + iterationsHtml + '</div>' +
+        logsHtml +
+      '</div>' : '') +
+    '</div>';
+  }
+
+  function renderSubSteps(subSteps, parentIndex) {
+    if (!subSteps || subSteps.length === 0) return '';
+    var items = subSteps.map(function(sub) {
+      return renderSubStep(sub, parentIndex);
+    }).join('');
+    return '<div class="sub-steps-list">' + items + '</div>';
+  }
+
+  function renderStep(step) {
+    var failed  = step.result === 'fail';
+    var rowClass = failed ? 'step-row failed' : step.result === 'pass' ? 'step-row passed' : 'step-row';
+    var inputText = escHtml(stepInput(step));
+    var retriedBadge = step.retried ? '<span class="badge badge-retry">retry</span>' : '';
+    var typeClass = step.type === 'ai' ? 'step-type type-ai' : 'step-type';
+
+    var hasSubSteps = step.type === 'ai' && step.subSteps && step.subSteps.length > 0;
+
+    var screenshotHtml = step.screenshot
+      ? '<div class="detail-screenshot" onclick="event.stopPropagation();showLightbox(\'' + escHtml(step.screenshot) + '\')">' +
+          '<img src="' + escHtml(step.screenshot) + '" alt="screenshot" />' +
+          '<div class="ss-label">capture</div>' +
+        '</div>'
+      : '';
+
+    var iterationsHtml = (step.type === 'ai' && !hasSubSteps) ? renderAiIterations(step.iterations) : '';
+    var failureHtml    = failed ? renderFailure(step) : '';
+    var logsHtml       = renderStepLogs(step);
+    var subStepsHtml   = hasSubSteps ? renderSubSteps(step.subSteps, step.index) : '';
+    var hasDetail = screenshotHtml || iterationsHtml || failureHtml || logsHtml;
+    var isExpandable = hasDetail || hasSubSteps;
+
+    return '<div class="' + rowClass + '" id="step-' + step.index + '" onclick="toggleStep(' + step.index + ',' + (step.timestamp || 0) + ')">' +
+      '<div class="step-summary">' +
+        '<span class="step-index">' + padIndex(step.index) + '</span>' +
+        '<span class="' + typeClass + '">' + escHtml(step.type) + '</span>' +
+        '<span class="step-input" title="' + inputText + '">' + inputText + '</span>' +
+        '<span class="step-meta">' +
+          resultBadge(step.result) +
+          retriedBadge +
+          (step.timestamp != null ? '<span class="step-timestamp" onclick="event.stopPropagation();seekVideo(' + step.timestamp + ')" title="Click to seek video">' + formatTimestamp(step.timestamp) + '</span>' : '') +
+          '<span class="step-duration">' + formatDuration(step.duration) + '</span>' +
+          (isExpandable ? '<span class="step-chevron">&#9658;</span>' : '') +
+        '</span>' +
+      '</div>' +
+      (hasDetail ? '<div class="step-detail">' +
+        '<div class="detail-grid">' + screenshotHtml + iterationsHtml + '</div>' +
+        failureHtml +
+        logsHtml +
+      '</div>' : '') +
+      subStepsHtml +
+    '</div>';
+  }
+
+  /* ── main render ── */
+
+  function render() {
+    var score = DATA.healthScore || 0;
+    var scoreColor = healthColor(score);
+    var scorePct = Math.round(score * 100);
+    var isPassed = DATA.passedSteps === DATA.totalSteps && DATA.failedSteps === 0;
+    var beaconClass = isPassed ? 'pass' : 'fail';
+
+    var topBadge = isPassed
+      ? '<span class="badge badge-pass">passed</span>'
+      : '<span class="badge badge-fail">failed</span>';
+
+    var stepsHtml = (DATA.steps || []).map(renderStep).join('');
+
+    var videoSection = DATA.hasVideo
+      ? '<div class="video-panel animate-in" style="animation-delay:0.2s">' +
+          '<div class="panel-label">Recording</div>' +
+          '<video id="test-video" src="recording.webm" controls></video>' +
+        '</div>'
+      : '';
+
+    var html =
+      '<div class="header">' +
+        '<div class="header-row-1">' +
+          '<span class="flow-name">' + escHtml(DATA.flow || 'Unnamed Flow') + '</span>' +
+          '<span class="status-beacon ' + beaconClass + '"></span>' +
+          topBadge +
+          '<span class="badge badge-platform">' + escHtml(DATA.platform || 'unknown') + '</span>' +
+        '</div>' +
+        '<div class="stats-grid">' +
+          '<div class="stat-cell">' +
+            '<div class="stat-label">Duration</div>' +
+            '<div class="stat-value">' + formatDuration(DATA.duration) + '</div>' +
+          '</div>' +
+          '<div class="stat-cell">' +
+            '<div class="stat-label">Total Steps</div>' +
+            '<div class="stat-value">' + (DATA.totalSteps || 0) + '</div>' +
+          '</div>' +
+          '<div class="stat-cell">' +
+            '<div class="stat-label">Health Score</div>' +
+            '<div class="stat-value ' + healthClass(score) + '">' + scorePct + '%</div>' +
+            '<div class="health-track"><div class="health-fill" style="width:' + scorePct + '%;background:' + scoreColor + ';"></div></div>' +
+          '</div>' +
+          '<div class="stat-cell">' +
+            '<div class="stat-label">Passed</div>' +
+            '<div class="stat-value pass">' + (DATA.passedSteps || 0) + '</div>' +
+          '</div>' +
+          '<div class="stat-cell">' +
+            '<div class="stat-label">Failed</div>' +
+            '<div class="stat-value' + (DATA.failedSteps ? ' fail' : '') + '">' + (DATA.failedSteps || 0) + '</div>' +
+          '</div>' +
+          '<div class="stat-cell">' +
+            '<div class="stat-label">Skipped</div>' +
+            '<div class="stat-value">' + (DATA.skippedSteps || 0) + '</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+
+      '<div class="summary-strip">' +
+        '<div class="summary-cell"><span class="summary-dot pass"></span><strong>' + (DATA.passedSteps || 0) + '</strong> passed</div>' +
+        '<div class="summary-cell"><span class="summary-dot fail"></span><strong>' + (DATA.failedSteps || 0) + '</strong> failed</div>' +
+        '<div class="summary-cell"><span class="summary-dot skipped"></span><strong>' + (DATA.skippedSteps || 0) + '</strong> skipped</div>' +
+      '</div>' +
+
+      videoSection +
+
+      '<div class="steps-panel">' +
+        '<div class="steps-header">' +
+          '<div class="panel-label">Execution Log</div>' +
+          '<span class="steps-count">' + (DATA.totalSteps || 0) + ' steps</span>' +
+        '</div>' +
+        '<div class="steps-list">' +
+          (stepsHtml || '<p class="empty-msg">No steps recorded.</p>') +
+        '</div>' +
+      '</div>' +
+
+      renderConsolePanel() +
+
+      '<div class="report-footer">flowtest report &middot; generated ' + (DATA.endedAt || new Date().toISOString()).split('T')[0] + '</div>';
+
+    document.getElementById('app').innerHTML = html;
+    initConsoleFilters();
+  }
+
+  function getAllConsoleLogs() {
+    var all = [];
+    (DATA.steps || []).forEach(function(step) {
+      if (step.consoleLogs && step.consoleLogs.length > 0) {
+        step.consoleLogs.forEach(function(log) {
+          all.push({
+            stepIndex: step.index,
+            level: log.level || 'log',
+            message: log.message || '',
+            timestamp: log.timestamp || 0,
+            stepTimestamp: step.timestamp || 0
+          });
+        });
+      }
+    });
+    return all;
+  }
+
+  function renderConsolePanel() {
+    var allLogs = getAllConsoleLogs();
+    if (allLogs.length === 0) return '';
+
+    var errorCount = allLogs.filter(function(l) { return l.level === 'error'; }).length;
+    var warnCount = allLogs.filter(function(l) { return l.level === 'warn'; }).length;
+
+    var entries = allLogs.map(function(log) {
+      var levelClass = 'level-' + log.level;
+      return '<div class="console-log-entry" data-level="' + escHtml(log.level) + '" onclick="seekVideo(' + log.stepTimestamp + ')">' +
+        '<span class="console-log-step">#' + padIndex(log.stepIndex) + '</span>' +
+        '<span class="log-level ' + levelClass + '">' + escHtml(log.level) + '</span>' +
+        '<span class="log-message">' + escHtml(log.message) + '</span>' +
+        '<span class="log-time">' + formatTimestamp(log.timestamp - (DATA.startedAtMs || 0)) + '</span>' +
+      '</div>';
+    }).join('');
+
+    return '<div class="console-panel">' +
+      '<div class="console-header">' +
+        '<div class="panel-label">Console Output</div>' +
+        '<div class="console-filters">' +
+          '<button class="console-filter-btn active" data-filter="all" onclick="filterConsole(\'all\',this)">All (' + allLogs.length + ')</button>' +
+          (errorCount ? '<button class="console-filter-btn filter-error" data-filter="error" onclick="filterConsole(\'error\',this)">Errors (' + errorCount + ')</button>' : '') +
+          (warnCount ? '<button class="console-filter-btn filter-warn" data-filter="warn" onclick="filterConsole(\'warn\',this)">Warnings (' + warnCount + ')</button>' : '') +
+        '</div>' +
+      '</div>' +
+      '<div class="console-body" id="console-body">' +
+        entries +
+      '</div>' +
+    '</div>';
+  }
+
+  function initConsoleFilters() {
+    // no-op for now, filters wired via onclick
+  }
+
+  function filterConsole(level, btn) {
+    var body = document.getElementById('console-body');
+    if (!body) return;
+    var entries = body.querySelectorAll('.console-log-entry');
+    entries.forEach(function(el) {
+      if (level === 'all') {
+        el.style.display = '';
+      } else {
+        el.style.display = el.getAttribute('data-level') === level ? '' : 'none';
+      }
+    });
+    var buttons = body.parentElement.querySelectorAll('.console-filter-btn');
+    buttons.forEach(function(b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+  }
+
+  /* ── interactions ── */
+
+  function toggleStep(index, timestampMs) {
+    var row = document.getElementById('step-' + index);
+    if (!row) return;
+    if (row.querySelector('.step-detail') || row.querySelector('.sub-steps-list')) {
+      row.classList.toggle('expanded');
+    }
+    seekVideo(timestampMs);
+  }
+
+  function toggleSubStep(subId) {
+    var row = document.getElementById('step-' + subId);
+    if (!row) return;
+    if (row.querySelector('.step-detail')) {
+      row.classList.toggle('expanded');
+    }
+  }
+
+  function seekVideo(timestampMs) {
+    if (!DATA.hasVideo) return;
+    var video = document.getElementById('test-video');
+    if (!video) return;
+    video.currentTime = timestampMs / 1000;
+    video.play().catch(function() {});
+  }
+
+  function showLightbox(src) {
+    document.getElementById('lightbox-img').src = src;
+    document.getElementById('lightbox').classList.add('active');
+  }
+
+  function hideLightbox() {
+    document.getElementById('lightbox').classList.remove('active');
+  }
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') hideLightbox();
+  });
+
+  /* ── boot ── */
+  render();
+</script>
+</body>
+</html>
