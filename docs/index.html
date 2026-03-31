@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FlowTest — AI-Powered UI Testing</title>
+<meta name="description" content="Write YAML. Run tests. Get reports. AI-powered cross-platform UI test runner for web, Android, and iOS.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-deep: #06090f;
+    --bg-surface: #0c1019;
+    --bg-card: #111722;
+    --bg-card-hover: #161d2b;
+    --border: #1a2233;
+    --border-bright: #243044;
+    --text-primary: #e4e8f1;
+    --text-secondary: #7a8599;
+    --text-dim: #4a5568;
+    --accent: #00e5a0;
+    --accent-dim: #00e5a033;
+    --accent-glow: #00e5a066;
+    --cyan: #22d3ee;
+    --amber: #f59e0b;
+    --red: #ef4444;
+    --blue: #3b82f6;
+    --mono: 'JetBrains Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--bg-deep);
+    color: var(--text-primary);
+    line-height: 1.6;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ─── Noise texture overlay ─── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  /* ─── Grid lines background ─── */
+  .grid-bg {
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 80px 80px;
+    opacity: 0.15;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ─── Layout ─── */
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+
+  /* ─── Nav ─── */
+  nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    padding: 16px 0;
+    background: #06090fcc;
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+  }
+  nav .container { display: flex; align-items: center; justify-content: space-between; }
+  .nav-logo {
+    font-family: var(--mono);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+    text-decoration: none;
+    letter-spacing: -0.5px;
+  }
+  .nav-logo span { color: var(--accent); }
+  .nav-links { display: flex; gap: 32px; align-items: center; }
+  .nav-links a {
+    font-size: 14px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--text-primary); }
+  .nav-gh {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border: 1px solid var(--border-bright);
+    border-radius: 8px;
+    font-size: 14px;
+    color: var(--text-primary) !important;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .nav-gh:hover { border-color: var(--accent); background: var(--accent-dim); }
+  .nav-gh svg { width: 18px; height: 18px; fill: currentColor; }
+
+  /* ─── Hero ─── */
+  .hero {
+    padding: 160px 0 100px;
+    text-align: center;
+    position: relative;
+  }
+  .hero-glow {
+    position: absolute;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    height: 400px;
+    background: radial-gradient(ellipse, var(--accent-dim) 0%, transparent 70%);
+    pointer-events: none;
+    filter: blur(60px);
+  }
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 16px;
+    border: 1px solid var(--border-bright);
+    border-radius: 100px;
+    font-size: 13px;
+    font-family: var(--mono);
+    color: var(--accent);
+    margin-bottom: 32px;
+    background: var(--bg-card);
+    animation: fadeUp 0.6s ease both;
+  }
+  .hero-badge::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+  .hero h1 {
+    font-family: var(--mono);
+    font-size: clamp(42px, 6vw, 72px);
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -2px;
+    margin-bottom: 24px;
+    animation: fadeUp 0.6s 0.1s ease both;
+  }
+  .hero h1 .accent { color: var(--accent); }
+  .hero p {
+    font-size: 18px;
+    color: var(--text-secondary);
+    max-width: 560px;
+    margin: 0 auto 48px;
+    line-height: 1.7;
+    animation: fadeUp 0.6s 0.2s ease both;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .hero-cta {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    animation: fadeUp 0.6s 0.3s ease both;
+  }
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 28px;
+    background: var(--accent);
+    color: var(--bg-deep);
+    font-family: var(--mono);
+    font-size: 14px;
+    font-weight: 600;
+    border: none;
+    border-radius: 10px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 30px var(--accent-dim);
+  }
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 28px;
+    background: var(--bg-card);
+    color: var(--text-primary);
+    font-family: var(--mono);
+    font-size: 14px;
+    font-weight: 500;
+    border: 1px solid var(--border-bright);
+    border-radius: 10px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .btn-secondary:hover { border-color: var(--text-dim); background: var(--bg-card-hover); }
+
+  /* ─── Code demo block ─── */
+  .demo {
+    margin: 80px auto 0;
+    max-width: 700px;
+    animation: fadeUp 0.6s 0.4s ease both;
+  }
+  .code-window {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-bright);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .code-titlebar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-card);
+  }
+  .code-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+  .code-dot:nth-child(1) { background: #ef4444; }
+  .code-dot:nth-child(2) { background: #f59e0b; }
+  .code-dot:nth-child(3) { background: #22c55e; }
+  .code-filename {
+    margin-left: 12px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+  .code-body {
+    padding: 24px;
+    overflow-x: auto;
+  }
+  .code-body pre {
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 1.8;
+    color: var(--text-secondary);
+    text-align: left;
+  }
+  .code-body .ck { color: var(--text-dim); }
+  .code-body .cs { color: var(--cyan); }
+  .code-body .cv { color: var(--accent); }
+  .code-body .cn { color: var(--amber); }
+  .code-body .ct { color: var(--text-primary); }
+
+  /* ─── Section titles ─── */
+  section { padding: 120px 0; }
+  .section-label {
+    font-family: var(--mono);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+  .section-title {
+    font-family: var(--mono);
+    font-size: clamp(28px, 4vw, 40px);
+    font-weight: 700;
+    letter-spacing: -1px;
+    margin-bottom: 16px;
+  }
+  .section-desc {
+    font-size: 16px;
+    color: var(--text-secondary);
+    max-width: 520px;
+    line-height: 1.7;
+  }
+
+  /* ─── How it works ─── */
+  .flow-steps {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0;
+    margin-top: 64px;
+    position: relative;
+  }
+  .flow-step {
+    display: grid;
+    grid-template-columns: 60px 1fr;
+    gap: 24px;
+    position: relative;
+  }
+  .flow-step-line {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .flow-step-num {
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    border: 1px solid var(--border-bright);
+    background: var(--bg-card);
+    font-family: var(--mono);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+  .flow-step-connector {
+    width: 1px;
+    flex: 1;
+    background: linear-gradient(to bottom, var(--border-bright), transparent);
+    min-height: 40px;
+  }
+  .flow-step-content {
+    padding-bottom: 48px;
+  }
+  .flow-step-content h3 {
+    font-family: var(--mono);
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    padding-top: 8px;
+  }
+  .flow-step-content p {
+    font-size: 15px;
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+  .flow-step-content code {
+    font-family: var(--mono);
+    font-size: 13px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 2px 8px;
+    border-radius: 5px;
+    color: var(--cyan);
+  }
+
+  /* ─── Features grid ─── */
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-top: 64px;
+  }
+  .feature-card {
+    padding: 32px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    transition: border-color 0.3s, transform 0.2s;
+  }
+  .feature-card:hover {
+    border-color: var(--border-bright);
+    transform: translateY(-2px);
+  }
+  .feature-icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    font-size: 20px;
+  }
+  .feature-icon.green { background: #00e5a018; color: var(--accent); }
+  .feature-icon.cyan { background: #22d3ee18; color: var(--cyan); }
+  .feature-icon.amber { background: #f59e0b18; color: var(--amber); }
+  .feature-icon.blue { background: #3b82f618; color: var(--blue); }
+  .feature-icon.red { background: #ef444418; color: var(--red); }
+  .feature-icon.purple { background: #a855f718; color: #a855f7; }
+  .feature-card h3 {
+    font-family: var(--mono);
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+  .feature-card p {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+
+  /* ─── Platforms ─── */
+  .platforms-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-top: 64px;
+  }
+  .platform-card {
+    padding: 40px 32px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    text-align: center;
+    transition: border-color 0.3s;
+  }
+  .platform-card:hover { border-color: var(--accent); }
+  .platform-card .platform-emoji { font-size: 36px; margin-bottom: 16px; }
+  .platform-card h3 {
+    font-family: var(--mono);
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .platform-card p {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+  .platform-card .driver {
+    margin-top: 16px;
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--cyan);
+    padding: 4px 12px;
+    background: #22d3ee0d;
+    border: 1px solid #22d3ee22;
+    border-radius: 6px;
+  }
+
+  /* ─── Report preview ─── */
+  .report-gallery {
+    margin-top: 64px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  .report-img {
+    border-radius: 12px;
+    border: 1px solid var(--border-bright);
+    overflow: hidden;
+    transition: transform 0.3s, border-color 0.3s;
+  }
+  .report-img:hover { transform: scale(1.02); border-color: var(--accent); }
+  .report-img img {
+    width: 100%;
+    display: block;
+  }
+  .report-img-label {
+    padding: 12px 16px;
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  /* ─── Install ─── */
+  .install-block {
+    margin-top: 48px;
+    max-width: 600px;
+  }
+  .install-cmd {
+    display: flex;
+    align-items: center;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-bright);
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  .install-cmd:hover { border-color: var(--accent); }
+  .install-cmd .prompt {
+    font-family: var(--mono);
+    font-size: 14px;
+    color: var(--text-dim);
+    margin-right: 12px;
+    user-select: none;
+  }
+  .install-cmd .cmd {
+    font-family: var(--mono);
+    font-size: 14px;
+    color: var(--text-primary);
+    flex: 1;
+  }
+  .install-cmd .copy-hint {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .install-cmd:hover .copy-hint { opacity: 1; }
+  .install-note {
+    font-size: 13px;
+    color: var(--text-dim);
+    font-style: italic;
+    margin-top: 8px;
+  }
+
+  /* ─── CTA ─── */
+  .cta-section {
+    text-align: center;
+    padding: 120px 0 80px;
+  }
+  .cta-section .section-title { margin-bottom: 24px; }
+  .cta-section p {
+    font-size: 16px;
+    color: var(--text-secondary);
+    margin-bottom: 40px;
+  }
+
+  /* ─── Footer ─── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 40px 0;
+  }
+  footer .container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  footer p {
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+  footer a { color: var(--accent); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+
+  /* ─── Responsive ─── */
+  @media (max-width: 768px) {
+    .nav-links a:not(.nav-gh) { display: none; }
+    .features-grid { grid-template-columns: 1fr; }
+    .platforms-row { grid-template-columns: 1fr; }
+    .report-gallery { grid-template-columns: 1fr; }
+    .hero-cta { flex-direction: column; align-items: center; }
+  }
+
+  /* ─── Scroll animations ─── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+</style>
+</head>
+<body>
+
+<div class="grid-bg"></div>
+
+<!-- Nav -->
+<nav>
+  <div class="container">
+    <a href="#" class="nav-logo">Flow<span>Test</span></a>
+    <div class="nav-links">
+      <a href="#how-it-works">How it works</a>
+      <a href="#features">Features</a>
+      <a href="#platforms">Platforms</a>
+      <a href="#install">Install</a>
+      <a href="https://github.com/govindmaheshwari2/flowtest" class="nav-gh" target="_blank">
+        <svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        GitHub
+      </a>
+    </div>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-glow"></div>
+  <div class="container">
+    <div class="hero-badge">open source</div>
+    <h1>Write YAML.<br>Test <span class="accent">anything</span>.</h1>
+    <p>AI-powered cross-platform test runner for web, Android, and iOS. Declarative steps for predictable actions. AI steps for dynamic flows. Beautiful reports.</p>
+    <div class="hero-cta">
+      <a href="#install" class="btn-primary">Get started</a>
+      <a href="https://github.com/govindmaheshwari2/flowtest" class="btn-secondary" target="_blank">View on GitHub</a>
+    </div>
+
+    <!-- Code demo -->
+    <div class="demo">
+      <div class="code-window">
+        <div class="code-titlebar">
+          <span class="code-dot"></span>
+          <span class="code-dot"></span>
+          <span class="code-dot"></span>
+          <span class="code-filename">checkout.yaml</span>
+        </div>
+        <div class="code-body"><pre><span class="cs">flow:</span> <span class="ct">checkout</span>
+<span class="cs">platform:</span> <span class="ct">web</span>
+<span class="cs">app:</span> <span class="ct">https://demo-store.example.com</span>
+
+<span class="cs">steps:</span>
+  - <span class="cs">tapOn:</span> <span class="cv">"Sign in"</span>
+  - <span class="cs">inputText:</span> <span class="cv">"testuser@example.com"</span>
+  - <span class="cs">tapOn:</span> <span class="cv">"Log in"</span>
+  - <span class="cs">wait:</span> <span class="cn">2000</span>
+  - <span class="cs">assertVisible:</span> <span class="cv">"Dashboard"</span>
+  - <span class="cs">ai:</span>
+      <span class="cs">goal:</span> <span class="cv">"Buy the first product and complete checkout"</span>
+      <span class="cs">max_steps:</span> <span class="cn">30</span>
+  - <span class="cs">assertVisible:</span> <span class="cv">"Order confirmed"</span></pre></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- How it works -->
+<section id="how-it-works">
+  <div class="container">
+    <div class="reveal">
+      <div class="section-label">How it works</div>
+      <div class="section-title">Three steps. Full coverage.</div>
+      <p class="section-desc">Write declarative steps for the predictable parts. Let Claude handle the dynamic parts. Get a detailed report with screenshots and video.</p>
+    </div>
+
+    <div class="flow-steps reveal">
+      <div class="flow-step">
+        <div class="flow-step-line">
+          <div class="flow-step-num">1</div>
+          <div class="flow-step-connector"></div>
+        </div>
+        <div class="flow-step-content">
+          <h3>Write a YAML flow</h3>
+          <p>Declarative steps like <code>tapOn</code>, <code>inputText</code>, <code>assertVisible</code> execute instantly with no AI reasoning. Add <code>ai:</code> steps where the UI is dynamic — Claude drives those with full context from prior steps.</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-step-line">
+          <div class="flow-step-num">2</div>
+          <div class="flow-step-connector"></div>
+        </div>
+        <div class="flow-step-content">
+          <h3>Refine with /refine</h3>
+          <p>Optionally run <code>/refine</code> on your flow. Claude asks clarifying questions about vague AI goals and transforms them into detailed, actionable instructions that produce consistent results.</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-step-line">
+          <div class="flow-step-num">3</div>
+        </div>
+        <div class="flow-step-content">
+          <h3>Run and review</h3>
+          <p>Execute with <code>/flowtest</code> and open the generated HTML report. Every step includes a screenshot, AI sub-steps expand to show individual actions, and web runs include video recording.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Features -->
+<section id="features">
+  <div class="container">
+    <div class="reveal">
+      <div class="section-label">Features</div>
+      <div class="section-title">Built for real testing.</div>
+      <p class="section-desc">Not a toy. A practical tool for testing real apps across platforms.</p>
+    </div>
+
+    <div class="features-grid reveal">
+      <div class="feature-card">
+        <div class="feature-icon green">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 10L8 15L17 5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <h3>Declarative + AI</h3>
+        <p>Predictable steps run instantly. Dynamic sections are driven by Claude with full app context. Best of both worlds.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon cyan">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="2" y="3" width="16" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M6 9l2 2 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <h3>HTML reports</h3>
+        <p>Self-contained viewer with health score, step timeline, expandable AI sub-steps, screenshots, and video.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon amber">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2L2 7l8 5 8-5-8-5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M2 13l8 5 8-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 10l8 5 8-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <h3>Cross-platform</h3>
+        <p>Same YAML syntax works across web, Android, and iOS. Platform conditionals handle the differences.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon blue">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M4 4h5v5H4zM11 4h5v5h-5zM4 11h5v5H4zM11 11h5v5h-5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+        </div>
+        <h3>Env variables</h3>
+        <p>Reference <code>$TEST_EMAIL</code> and <code>$TEST_PASSWORD</code> in your flows. Mask sensitive values in reports.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon purple">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2v4M10 14v4M18 10h-4M6 10H2M15.66 4.34l-2.83 2.83M7.17 12.83l-2.83 2.83M15.66 15.66l-2.83-2.83M7.17 7.17L4.34 4.34" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </div>
+        <h3>/refine workflow</h3>
+        <p>Interactive assistant that asks clarifying questions and transforms vague AI goals into detailed, consistent instructions.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon red">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2a8 8 0 100 16 8 8 0 000-16z" stroke="currentColor" stroke-width="1.5"/><path d="M10 6v5l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <h3>No extra billing</h3>
+        <p>Uses the Claude CLI you already have. No API keys to configure, no separate billing, no TypeScript to maintain.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Platforms -->
+<section id="platforms">
+  <div class="container">
+    <div class="reveal">
+      <div class="section-label">Platforms</div>
+      <div class="section-title">One syntax. Three platforms.</div>
+      <p class="section-desc">Write once, test everywhere. Each platform has its own driver under the hood.</p>
+    </div>
+
+    <div class="platforms-row reveal">
+      <div class="platform-card">
+        <div class="platform-emoji">&#x1F310;</div>
+        <h3>Web</h3>
+        <p>Headless Chrome via CDP. Video recording, console logs, full DOM access. Flutter web works out of the box.</p>
+        <span class="driver">agent-browser</span>
+      </div>
+      <div class="platform-card">
+        <div class="platform-emoji">&#x1F4F1;</div>
+        <h3>Android</h3>
+        <p>Android device or emulator via UI Automator. Works with any app — native, React Native, Flutter.</p>
+        <span class="driver">adb</span>
+      </div>
+      <div class="platform-card">
+        <div class="platform-emoji">&#x1F34E;</div>
+        <h3>iOS</h3>
+        <p>iPhone or simulator via Facebook IDB. Native accessibility tree for reliable element targeting.</p>
+        <span class="driver">idb</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Report preview -->
+<section id="report">
+  <div class="container">
+    <div class="reveal">
+      <div class="section-label">Reports</div>
+      <div class="section-title">See everything that happened.</div>
+      <p class="section-desc">Every run generates a self-contained HTML report. No server needed — just open the file.</p>
+    </div>
+
+    <div class="report-gallery reveal">
+      <div class="report-img">
+        <img src="images/report-header.png" alt="Report dashboard with health score and step counts" loading="lazy">
+        <div class="report-img-label">Dashboard — health score, pass/fail, duration</div>
+      </div>
+      <div class="report-img">
+        <img src="images/report-steps.png" alt="Execution log showing each step with results" loading="lazy">
+        <div class="report-img-label">Execution log — every step with result</div>
+      </div>
+      <div class="report-img">
+        <img src="images/report-substeps.png" alt="AI sub-steps expanded with screenshots" loading="lazy">
+        <div class="report-img-label">AI sub-steps — expandable task breakdown</div>
+      </div>
+      <div class="report-img">
+        <img src="images/report-substeps-detail.png" alt="Iteration details with per-action screenshots" loading="lazy">
+        <div class="report-img-label">Iterations — per-action detail with screenshots</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Install -->
+<section id="install">
+  <div class="container">
+    <div class="reveal">
+      <div class="section-label">Get started</div>
+      <div class="section-title">Install in 30 seconds.</div>
+      <p class="section-desc">Clone, copy, done. No build step, no dependencies beyond what you already have.</p>
+    </div>
+
+    <div class="install-block reveal">
+      <div class="install-cmd" onclick="copyCmd(this, 'git clone https://github.com/govindmaheshwari2/flowtest.git')">
+        <span class="prompt">$</span>
+        <span class="cmd">git clone https://github.com/govindmaheshwari2/flowtest.git</span>
+        <span class="copy-hint">click to copy</span>
+      </div>
+      <div class="install-cmd" onclick="copyCmd(this, 'cp -r flowtest/flowtest ~/.claude/skills/flowtest')">
+        <span class="prompt">$</span>
+        <span class="cmd">cp -r flowtest/flowtest ~/.claude/skills/flowtest</span>
+        <span class="copy-hint">click to copy</span>
+      </div>
+      <p class="install-note">Then use /flowtest and /refine in Claude Code.</p>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="container reveal">
+    <div class="section-title">Stop writing flaky test scripts.</div>
+    <p>Let YAML handle the predictable parts. Let Claude handle the rest.</p>
+    <div class="hero-cta">
+      <a href="https://github.com/govindmaheshwari2/flowtest" class="btn-primary" target="_blank">
+        <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        View on GitHub
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="container">
+    <p>FlowTest &mdash; MIT License</p>
+    <p>Built by <a href="https://github.com/govindmaheshwari2" target="_blank">govindmaheshwari2</a></p>
+  </div>
+</footer>
+
+<script>
+  // Scroll reveal
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); } });
+  }, { threshold: 0.15 });
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  // Copy command
+  function copyCmd(el, text) {
+    navigator.clipboard.writeText(text).then(() => {
+      const hint = el.querySelector('.copy-hint');
+      hint.textContent = 'copied!';
+      hint.style.opacity = '1';
+      hint.style.color = '#00e5a0';
+      setTimeout(() => { hint.textContent = 'click to copy'; hint.style.color = ''; hint.style.opacity = ''; }, 1500);
+    });
+  }
+</script>
+
+</body>
+</html>
