@@ -1,0 +1,35 @@
+{
+  "name": "flowtest",
+  "owner": {
+    "name": "Govind Maheshwari",
+    "email": "govindmh14@gmail.com"
+  },
+  "plugins": [
+    {
+      "name": "flowtest",
+      "source": "./flowtest",
+      "description": "Automatated testing framework",
+      "version": "0.0.1",
+      "author": {
+        "name": "Govind Maheshwari"
+      },
+      "homepage": "https://govindmaheshwari2.github.io/flowtest",
+      "keywords": ["testing", "automation", "flowtest"],
+      "category": "Testing",
+      "tags": ["automation", "testing", "flowtest"]
+    },
+    {
+      "name": "refine",
+      "source": "./flowtest/refine",
+      "description": "A plugin to refine the input for flowtest",
+      "version": "0.0.1",
+      "author": {
+        "name": "Govind Maheshwari"
+      },
+      "homepage": "https://govindmaheshwari2.github.io/flowtest",
+      "keywords": ["refine", "input", "flowtest"],
+        "category": "Testing",
+        "tags": ["refine", "input", "flowtest"]
+    }
+  ]
+}
