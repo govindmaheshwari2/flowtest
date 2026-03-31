@@ -6,9 +6,19 @@ steps:
   - tapOn: "Sign in"
   - inputText: "testuser@example.com"
   - tapOn: "Log in"
+  - assertVisible: "Dashboard"
   - ai:
       goal: "Buy something and check out"
       max_steps: 30
+  - verify:
+      checks:
+        - "Order confirmation message is visible"
+        - "Order number is displayed on screen"
+        - "Total price matches what was in the cart"
   - ai:
       goal: "Go to account settings and update the profile"
       max_steps: 25
+  - verify:
+      checks:
+        - "Profile saved confirmation or success toast is visible"
+        - "Updated name or email is displayed in the profile section"

@@ -141,7 +141,28 @@ steps:
 | `launchApp`        | `launchApp: {clearState: true}`           | Launch/relaunch the app                      |
 | `stopApp`          | `stopApp`                                 | Stop the app (mobile)                        |
 | `ai`               | `ai: {goal: "...", max_steps: 20}`        | AI-driven block                              |
+| `verify`           | `verify: {checks: [...]}`                 | AI-evaluated test assertions                 |
 | `when`             | `when: {platform: ios, do: [...]}`        | Platform conditional                         |
+
+### Verify steps
+
+`verify:` lets you define a list of plain-language checks that the agent evaluates using its AI judgment — screenshot analysis, DOM inspection, and visual reasoning. Each check is a natural language description of what should be true at that moment.
+
+Works for:
+- **UI checks** — element visibility, text content, layout state
+- **Animation checks** — CSS transitions, canvas activity, motion indicators
+- **Logic checks** — computed values, counters, conditional UI, form state
+
+```yaml
+- verify:
+    checks:
+      - "Order confirmation message is visible"
+      - "Order number is displayed on screen"
+      - "Success animation plays after purchase"
+      - "Total price matches what was in the cart"
+```
+
+Each check reports individually in the HTML report — you see which passed, which failed, and why. The overall step fails if any single check fails.
 
 ### Environment variables
 

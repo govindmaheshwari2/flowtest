@@ -3,8 +3,155 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FlowTest — AI-Powered UI Testing</title>
-<meta name="description" content="Write YAML. Run tests. Get reports. AI-powered cross-platform UI test runner for web, Android, and iOS.">
+
+<!-- Primary SEO -->
+<title>FlowTest — AI-Powered YAML UI Test Runner for Web, Android & iOS</title>
+<meta name="description" content="FlowTest is an open-source AI-powered UI test runner. Write YAML flows, let Claude drive dynamic steps, and get self-contained HTML reports with screenshots and video. Works on web, Android, and iOS.">
+<meta name="keywords" content="UI testing, YAML test automation, AI testing tool, Claude AI testing, cross-platform UI testing, automated testing, web testing, Android testing, iOS testing, open source test runner">
+<meta name="author" content="govindmaheshwari2">
+<meta name="robots" content="index, follow">
+<meta name="application-name" content="FlowTest">
+<meta name="theme-color" content="#00e5a0">
+<link rel="canonical" href="https://govindmaheshwari2.github.io/flowtest/">
+<link rel="sitemap" type="application/xml" href="/flowtest/sitemap.xml">
+
+<!-- Open Graph (Facebook, LinkedIn) -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://govindmaheshwari2.github.io/flowtest/">
+<meta property="og:title" content="FlowTest — AI-Powered YAML UI Test Runner">
+<meta property="og:description" content="Write YAML flows. Let Claude drive dynamic UI steps. Get beautiful HTML reports with screenshots and video. Works on web, Android, and iOS.">
+<meta property="og:image" content="https://govindmaheshwari2.github.io/flowtest/images/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="FlowTest HTML report dashboard showing health score, step timeline and screenshots">
+<meta property="og:site_name" content="FlowTest">
+<meta property="og:locale" content="en_US">
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:url" content="https://govindmaheshwari2.github.io/flowtest/">
+<meta name="twitter:title" content="FlowTest — AI-Powered YAML UI Test Runner">
+<meta name="twitter:description" content="Write YAML flows. Let Claude drive dynamic UI steps. Get beautiful HTML reports with screenshots and video. Works on web, Android, and iOS.">
+<meta name="twitter:image" content="https://govindmaheshwari2.github.io/flowtest/images/og-image.png">
+<meta name="twitter:image:alt" content="FlowTest HTML report dashboard">
+
+<!-- Structured Data (JSON-LD @graph) -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://govindmaheshwari2.github.io/flowtest/#software",
+      "name": "FlowTest",
+      "description": "AI-powered YAML-driven UI test runner for web, Android, and iOS. Uses Claude AI for dynamic, intent-based test steps. Produces self-contained HTML reports with screenshots and video.",
+      "url": "https://govindmaheshwari2.github.io/flowtest/",
+      "applicationCategory": "DeveloperApplication",
+      "applicationSubCategory": "Test Automation",
+      "operatingSystem": ["macOS", "Linux", "Windows"],
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "featureList": [
+        "YAML-driven test authoring",
+        "Claude AI-powered dynamic steps",
+        "Plain-language verify: assertions",
+        "Web browser UI testing",
+        "Android mobile UI testing",
+        "iOS mobile UI testing",
+        "Self-contained HTML reports",
+        "Screenshot capture after every step",
+        "Video recording for web runs"
+      ],
+      "screenshot": "https://govindmaheshwari2.github.io/flowtest/images/og-image.png",
+      "downloadUrl": "https://github.com/govindmaheshwari2/flowtest",
+      "installUrl": "https://github.com/govindmaheshwari2/flowtest#installation",
+      "license": "https://opensource.org/licenses/MIT",
+      "isAccessibleForFree": true,
+      "author": {
+        "@type": "Person",
+        "@id": "https://github.com/govindmaheshwari2",
+        "name": "govindmaheshwari2",
+        "url": "https://github.com/govindmaheshwari2"
+      }
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "@id": "https://govindmaheshwari2.github.io/flowtest/#sourcecode",
+      "name": "FlowTest Source Code",
+      "codeRepository": "https://github.com/govindmaheshwari2/flowtest",
+      "programmingLanguage": ["JavaScript", "YAML"],
+      "runtimePlatform": "Node.js",
+      "license": "https://opensource.org/licenses/MIT",
+      "about": { "@id": "https://govindmaheshwari2.github.io/flowtest/#software" }
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://govindmaheshwari2.github.io/flowtest/#website",
+      "url": "https://govindmaheshwari2.github.io/flowtest/",
+      "name": "FlowTest",
+      "description": "Official site for FlowTest, an open-source AI-powered YAML UI test runner",
+      "inLanguage": "en-US"
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is FlowTest?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "FlowTest is an open-source AI-powered UI test runner that uses YAML files to define test flows. It integrates Claude AI to handle dynamic, unpredictable UI steps and supports web browsers, Android, and iOS. It produces self-contained HTML reports with screenshots and video recording."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How does FlowTest use Claude AI for testing?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "FlowTest uses Anthropic's Claude AI to drive dynamic test steps where traditional scripted selectors would fail. Claude interprets screenshots and UI state accumulated from all prior steps to make navigation decisions, enabling self-healing, intent-based test automation without brittle selectors."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is FlowTest free and open source?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. FlowTest is fully open source under the MIT license and free to use. The source code is available on GitHub at https://github.com/govindmaheshwari2/flowtest."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What platforms does FlowTest support?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "FlowTest supports web (headless Chrome via agent-browser), Android (via adb and UI Automator), and iOS (via Facebook IDB). A single YAML test file can target all three platforms using platform conditionals."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I install FlowTest?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Clone the repository with 'git clone https://github.com/govindmaheshwari2/flowtest.git', then copy the skill folder: 'cp -r flowtest/flowtest ~/.claude/skills/flowtest'. After that, the /flowtest and /refine slash commands are available in Claude Code."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the verify: step in FlowTest?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The verify: step lets you write plain-language checks that the agent evaluates using AI judgment — screenshot analysis, DOM inspection, and visual reasoning. It supports UI checks (element visibility, text), animation checks (CSS transitions, canvas activity), and logic checks (computed values, counters, totals)."
+          }
+        }
+      ]
+    }
+  ]
+}
+</script>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
@@ -551,6 +698,138 @@
   footer a { color: var(--accent); text-decoration: none; }
   footer a:hover { text-decoration: underline; }
 
+  /* ─── FAQ ─── */
+  .faq-list { margin-top: 48px; max-width: 760px; }
+  .faq-item {
+    border-bottom: 1px solid var(--border);
+    padding: 4px 0;
+  }
+  .faq-item:first-child { border-top: 1px solid var(--border); }
+  .faq-q {
+    font-family: var(--mono);
+    font-size: 15px;
+    font-weight: 600;
+    padding: 20px 0;
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+  }
+  .faq-q::-webkit-details-marker { display: none; }
+  .faq-q::after {
+    content: '+';
+    font-size: 20px;
+    color: var(--accent);
+    flex-shrink: 0;
+    transition: transform 0.2s;
+  }
+  .faq-item[open] .faq-q::after { transform: rotate(45deg); }
+  .faq-a {
+    font-size: 15px;
+    color: var(--text-secondary);
+    line-height: 1.7;
+    padding-bottom: 20px;
+  }
+  .faq-a code {
+    font-family: var(--mono);
+    font-size: 13px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 2px 7px;
+    border-radius: 4px;
+    color: var(--cyan);
+  }
+  .faq-a a { color: var(--accent); text-decoration: none; }
+  .faq-a a:hover { text-decoration: underline; }
+
+  /* ─── Verify section ─── */
+  .verify-layout {
+    display: flex;
+    gap: 32px;
+    margin-top: 64px;
+    align-items: flex-start;
+  }
+  .verify-checks {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .verify-check {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    padding: 16px 20px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+  }
+  .verify-check.pass { border-color: #00e5a033; }
+  .verify-check.fail { border-color: #ef444433; }
+  .check-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .verify-check.pass .check-icon { background: #00e5a018; color: var(--accent); }
+  .verify-check.fail .check-icon { background: #ef444418; color: var(--red); }
+  .check-label {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+  }
+  .check-reason {
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+  .verify-types {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-top: 40px;
+  }
+  .verify-type-card {
+    padding: 24px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    text-align: center;
+  }
+  .vt-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 14px;
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 700;
+    background: #00e5a018;
+    color: var(--accent);
+  }
+  .verify-type-card h4 {
+    font-family: var(--mono);
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .verify-type-card p {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+
   /* ─── Responsive ─── */
   @media (max-width: 768px) {
     .nav-links a:not(.nav-gh) { display: none; }
@@ -558,6 +837,8 @@
     .platforms-row { grid-template-columns: 1fr; }
     .report-gallery { grid-template-columns: 1fr; }
     .hero-cta { flex-direction: column; align-items: center; }
+    .verify-layout { flex-direction: column; }
+    .verify-types { grid-template-columns: 1fr; }
   }
 
   /* ─── Scroll animations ─── */
@@ -577,15 +858,17 @@
 <div class="grid-bg"></div>
 
 <!-- Nav -->
-<nav>
+<nav aria-label="Main navigation">
   <div class="container">
     <a href="#" class="nav-logo">Flow<span>Test</span></a>
     <div class="nav-links">
       <a href="#how-it-works">How it works</a>
       <a href="#features">Features</a>
+      <a href="#verify">Verify</a>
       <a href="#platforms">Platforms</a>
+      <a href="#faq">FAQ</a>
       <a href="#install">Install</a>
-      <a href="https://github.com/govindmaheshwari2/flowtest" class="nav-gh" target="_blank">
+      <a href="https://github.com/govindmaheshwari2/flowtest" class="nav-gh" target="_blank" rel="noopener noreferrer" aria-label="View FlowTest on GitHub">
         <svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
         GitHub
       </a>
@@ -593,8 +876,11 @@
   </div>
 </nav>
 
+<!-- Main content -->
+<main>
+
 <!-- Hero -->
-<section class="hero">
+<section class="hero" aria-label="Hero">
   <div class="hero-glow"></div>
   <div class="container">
     <div class="hero-badge">open source</div>
@@ -602,7 +888,7 @@
     <p>AI-powered cross-platform test runner for web, Android, and iOS. Declarative steps for predictable actions. AI steps for dynamic flows. Beautiful reports.</p>
     <div class="hero-cta">
       <a href="#install" class="btn-primary">Get started</a>
-      <a href="https://github.com/govindmaheshwari2/flowtest" class="btn-secondary" target="_blank">View on GitHub</a>
+      <a href="https://github.com/govindmaheshwari2/flowtest" class="btn-secondary" target="_blank" rel="noopener noreferrer">View on GitHub</a>
     </div>
 
     <!-- Code demo -->
@@ -627,7 +913,11 @@
   - <span class="cs">ai:</span>
       <span class="cs">goal:</span> <span class="cv">"Buy the first product and complete checkout"</span>
       <span class="cs">max_steps:</span> <span class="cn">30</span>
-  - <span class="cs">assertVisible:</span> <span class="cv">"Order confirmed"</span></pre></div>
+  - <span class="cs">verify:</span>
+      <span class="cs">checks:</span>
+        - <span class="cv">"Order confirmation page is shown"</span>
+        - <span class="cv">"Order number is displayed"</span>
+        - <span class="cv">"Success animation plays"</span></pre></div>
       </div>
     </div>
   </div>
@@ -728,6 +1018,105 @@
         <h3>No extra billing</h3>
         <p>Uses the Claude CLI you already have. No API keys to configure, no separate billing, no TypeScript to maintain.</p>
       </div>
+      <div class="feature-card" style="border-color: var(--accent); background: linear-gradient(135deg, var(--bg-card), #00e5a00a);">
+        <div class="feature-icon green">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M9 11l2 2 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><rect x="2" y="2" width="16" height="16" rx="3" stroke="currentColor" stroke-width="1.5"/></svg>
+        </div>
+        <h3>AI-evaluated checks</h3>
+        <p>Write plain-language <code>verify:</code> checks. The agent evaluates UI state, animations, and logic using its own judgment — no selectors needed.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Verify section -->
+<section id="verify">
+  <div class="container">
+    <div class="reveal">
+      <div class="section-label">verify</div>
+      <div class="section-title">Test what you can't easily assert.</div>
+      <p class="section-desc">Write plain-language checks. The agent takes a screenshot, inspects the DOM, and uses its AI judgment to evaluate each one — passing or failing with a reason.</p>
+    </div>
+
+    <div class="verify-layout reveal">
+      <div class="code-window" style="flex: 1;">
+        <div class="code-titlebar">
+          <span class="code-dot"></span>
+          <span class="code-dot"></span>
+          <span class="code-dot"></span>
+          <span class="code-filename">checkout.yaml</span>
+        </div>
+        <div class="code-body"><pre><span class="cs">steps:</span>
+  <span class="ck"># ... complete the checkout ...</span>
+  - <span class="cs">ai:</span>
+      <span class="cs">goal:</span> <span class="cv">"Add item to cart and complete checkout"</span>
+      <span class="cs">max_steps:</span> <span class="cn">20</span>
+
+  <span class="ck"># Then verify outcomes</span>
+  - <span class="cs">verify:</span>
+      <span class="cs">checks:</span>
+        - <span class="cv">"Order confirmation page is shown"</span>
+        - <span class="cv">"Order number is displayed"</span>
+        - <span class="cv">"Success animation plays"</span>
+        - <span class="cv">"Total price matches cart amount"</span></pre></div>
+      </div>
+
+      <div class="verify-checks">
+        <div class="verify-check pass">
+          <div class="check-icon">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7l3 3 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="check-body">
+            <div class="check-label">Order confirmation page is shown</div>
+            <div class="check-reason">Element with text "Order Confirmed" found in accessibility tree</div>
+          </div>
+        </div>
+        <div class="verify-check pass">
+          <div class="check-icon">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7l3 3 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="check-body">
+            <div class="check-label">Order number is displayed</div>
+            <div class="check-reason">Order ID element visible with value #ORD-28471</div>
+          </div>
+        </div>
+        <div class="verify-check pass">
+          <div class="check-icon">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2.5 7l3 3 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+          <div class="check-body">
+            <div class="check-label">Success animation plays</div>
+            <div class="check-reason">Canvas element with active animation class detected in DOM</div>
+          </div>
+        </div>
+        <div class="verify-check fail">
+          <div class="check-icon">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          </div>
+          <div class="check-body">
+            <div class="check-label">Total price matches cart amount</div>
+            <div class="check-reason">Price shown as "$0.00" — total did not render correctly</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="verify-types reveal">
+      <div class="verify-type-card">
+        <div class="vt-icon">UI</div>
+        <h4>UI checks</h4>
+        <p>Element visibility, text content, layout state, error messages</p>
+      </div>
+      <div class="verify-type-card">
+        <div class="vt-icon" style="color: var(--cyan); background: #22d3ee18;">&#9654;</div>
+        <h4>Animation checks</h4>
+        <p>CSS transitions, canvas activity, motion classes, loading states</p>
+      </div>
+      <div class="verify-type-card">
+        <div class="vt-icon" style="color: var(--amber); background: #f59e0b18;">&#128202;</div>
+        <h4>Logic checks</h4>
+        <p>Computed values, counters, conditional UI, form state, totals</p>
+      </div>
     </div>
   </div>
 </section>
@@ -819,14 +1208,50 @@
   </div>
 </section>
 
+<!-- FAQ -->
+<section id="faq" aria-labelledby="faq-title">
+  <div class="container">
+    <div class="reveal">
+      <div class="section-label">FAQ</div>
+      <div class="section-title" id="faq-title">Common questions.</div>
+    </div>
+    <div class="faq-list reveal">
+      <details class="faq-item">
+        <summary class="faq-q">What is FlowTest?</summary>
+        <p class="faq-a">FlowTest is an open-source AI-powered UI test runner that uses YAML files to define test flows. Declarative steps like <code>tapOn</code> and <code>assertVisible</code> run instantly. <code>ai:</code> steps hand control to Claude, which uses accumulated context from all prior steps to navigate toward a goal. Every run produces a self-contained HTML report with screenshots and video.</p>
+      </details>
+      <details class="faq-item">
+        <summary class="faq-q">How does FlowTest use Claude AI for testing?</summary>
+        <p class="faq-a">Claude drives dynamic test steps where traditional selectors would fail. It interprets screenshots and UI state from all prior steps to decide what to tap, type, or scroll — enabling intent-based, self-healing automation without brittle XPath or CSS selectors.</p>
+      </details>
+      <details class="faq-item">
+        <summary class="faq-q">Is FlowTest free and open source?</summary>
+        <p class="faq-a">Yes. FlowTest is fully open source under the MIT license — free for personal and commercial use. Source code and examples are on <a href="https://github.com/govindmaheshwari2/flowtest" target="_blank" rel="noopener noreferrer">GitHub</a>.</p>
+      </details>
+      <details class="faq-item">
+        <summary class="faq-q">What platforms does FlowTest support?</summary>
+        <p class="faq-a">FlowTest supports web (headless Chrome via agent-browser), Android (via adb and UI Automator), and iOS (via Facebook IDB). A single YAML file can target all three platforms using <code>when:</code> conditionals.</p>
+      </details>
+      <details class="faq-item">
+        <summary class="faq-q">How do I install FlowTest?</summary>
+        <p class="faq-a">Clone the repo and copy the skill folder into Claude Code's skills directory — no build step, no dependencies beyond Claude Code and the platform driver. See the <a href="#install">Install section</a> for exact commands.</p>
+      </details>
+      <details class="faq-item">
+        <summary class="faq-q">What is the verify: step?</summary>
+        <p class="faq-a">The <code>verify:</code> step lets you write plain-language checks the agent evaluates using its AI judgment — screenshot analysis, DOM inspection, and visual reasoning. Works for UI checks (element visibility, text), animation checks (CSS transitions, canvas activity), and logic checks (computed values, totals, form state).</p>
+      </details>
+    </div>
+  </div>
+</section>
+
 <!-- CTA -->
 <section class="cta-section">
   <div class="container reveal">
     <div class="section-title">Stop writing flaky test scripts.</div>
     <p>Let YAML handle the predictable parts. Let Claude handle the rest.</p>
     <div class="hero-cta">
-      <a href="https://github.com/govindmaheshwari2/flowtest" class="btn-primary" target="_blank">
-        <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+      <a href="https://github.com/govindmaheshwari2/flowtest" class="btn-primary" target="_blank" rel="noopener noreferrer">
+        <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
         View on GitHub
       </a>
     </div>
@@ -834,10 +1259,12 @@
 </section>
 
 <!-- Footer -->
-<footer>
+</main>
+
+<footer aria-label="Site footer">
   <div class="container">
     <p>FlowTest &mdash; MIT License</p>
-    <p>Built by <a href="https://github.com/govindmaheshwari2" target="_blank">govindmaheshwari2</a></p>
+    <p>Built by <a href="https://github.com/govindmaheshwari2" target="_blank" rel="noopener noreferrer">govindmaheshwari2</a></p>
   </div>
 </footer>
 

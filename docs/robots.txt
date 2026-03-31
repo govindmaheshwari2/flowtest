@@ -1,0 +1,45 @@
+# Standard search engine crawlers
+User-agent: *
+Allow: /
+
+# OpenAI — GPTBot trains ChatGPT models
+User-agent: GPTBot
+Allow: /
+
+# OpenAI — real-time retrieval for ChatGPT Browse/Search
+User-agent: ChatGPT-User
+Allow: /
+
+# Anthropic — trains Claude models
+User-agent: ClaudeBot
+Allow: /
+
+# Anthropic — indexes content for Claude's web search
+User-agent: Claude-SearchBot
+Allow: /
+
+# Anthropic — real-time retrieval when Claude fetches a page
+User-agent: Claude-User
+Allow: /
+
+# Google — used for Gemini and Google AI products
+User-agent: Google-Extended
+Allow: /
+
+# Perplexity
+User-agent: PerplexityBot
+Allow: /
+
+# Meta AI
+User-agent: Meta-ExternalAgent
+Allow: /
+
+# Microsoft / Bing AI
+User-agent: Bingbot
+Allow: /
+
+# You.com
+User-agent: YouBot
+Allow: /
+
+Sitemap: https://govindmaheshwari2.github.io/flowtest/sitemap.xml

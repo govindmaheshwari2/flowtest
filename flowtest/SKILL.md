@@ -151,6 +151,85 @@ For `when:` steps, check the `platform` field against the current platform:
 - If it doesn't match and `else:` exists with a `do:`, execute those steps
 - If it doesn't match and no `else:`, skip entirely and mark as skipped
 
+### Verify steps (verify:)
+
+`verify:` steps let you define a list of named checks that the agent evaluates using its AI judgment — screenshot analysis, DOM/accessibility snapshot inspection, and visual reasoning. Each check is a plain-language description of what should be true at that moment.
+
+**Syntax:**
+
+```yaml
+- verify:
+    checks:
+      - "Order confirmation message is visible"
+      - "Order number is displayed on screen"
+      - "Success animation plays after purchase"
+      - "Total price matches what was in the cart"
+```
+
+**How to execute a `verify:` step:**
+
+1. Take a snapshot and screenshot of the current state:
+   - **Web:** `agent-browser snapshot` + `agent-browser screenshot <report-dir>/screenshots/step-<NN>-verify.png`
+   - **Android:** `adb shell uiautomator dump` + pull XML + `adb shell screencap` + pull PNG
+   - **iOS:** `idb ui describe-all` + `idb screenshot <report-dir>/screenshots/step-<NN>-verify.png`
+
+2. For each check in `checks:`, evaluate it against the snapshot and screenshot using your AI judgment:
+   - Read the current UI state (element tree, text content, visual state from screenshot)
+   - Determine if the check passes or fails based on what you observe
+   - UI checks: look for visible text, element presence, layout, visual indicators
+   - Animation checks: look for CSS animation classes, transition states, canvas activity, or motion indicators in the accessibility tree
+   - Logic checks: look for specific values, counts, graph elements, state indicators, or computed outputs visible in the UI
+
+3. For each check, record:
+   - `description`: the original check string
+   - `result`: `"pass"` or `"fail"`
+   - `reason`: a 1-sentence explanation of why it passed or failed (what you observed)
+
+4. The overall `verify:` step result is:
+   - `"pass"` if ALL checks pass
+   - `"fail"` if ANY check fails
+
+5. Take a screenshot per check only if needed for clarity — by default, one screenshot at the start of the verify step is sufficient.
+
+**In results.json**, a `verify:` step looks like:
+
+```json
+{
+  "index": 4,
+  "type": "verify",
+  "input": "3 checks",
+  "result": "pass",
+  "duration": 3200,
+  "timestamp": 12000,
+  "screenshot": "screenshots/step-04-verify.png",
+  "retried": false,
+  "consoleLogs": [],
+  "checks": [
+    {
+      "description": "Order confirmation message is visible",
+      "result": "pass",
+      "reason": "Element with text 'Order Confirmed' is present in the accessibility tree"
+    },
+    {
+      "description": "Order number is displayed on screen",
+      "result": "pass",
+      "reason": "Order ID element visible with value #ORD-28471"
+    },
+    {
+      "description": "Success animation plays after purchase",
+      "result": "fail",
+      "reason": "No canvas element or animation class found in the DOM at time of check"
+    }
+  ]
+}
+```
+
+**Retry behavior:** If any check fails, wait 1 second and re-evaluate that check once. Animations and async UI updates may not be visible immediately. If it still fails on retry, mark as failed.
+
+#### verify: steps
+
+`verify:` steps are not translated to shell commands — they are handled entirely by the agent using the "Verify steps (verify:)" instructions above. Do not attempt to map them to a driver command.
+
 ### Declarative step commands
 
 Execute these directly as shell commands. No reasoning or analysis needed — just translate and run.

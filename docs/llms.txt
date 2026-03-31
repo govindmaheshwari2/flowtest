@@ -1,0 +1,72 @@
+# FlowTest
+
+> FlowTest is an open-source AI-powered YAML-driven UI test runner for web, Android, and iOS. It uses Anthropic's Claude AI to execute dynamic, intent-based test steps and produces self-contained HTML reports with screenshots and video. Free to use under the MIT license.
+
+## What is FlowTest?
+
+FlowTest lets you write UI tests as YAML files instead of code. Declarative steps like `tapOn`, `inputText`, and `assertVisible` run instantly without AI reasoning. When the UI is dynamic or unpredictable, `ai:` steps hand control to Claude — which uses accumulated context from all prior steps (screenshots, element trees, results) to navigate toward a goal. After each run, a self-contained HTML report is generated with a health score, step timeline, screenshots per step, and video recording (web).
+
+## Key Features
+
+- YAML-first test authoring — no coding required for basic flows
+- Claude AI drives dynamic steps using full accumulated context
+- `verify:` step type for plain-language assertions the agent evaluates using AI judgment
+- Cross-platform: web (agent-browser/Chrome CDP), Android (adb), iOS (idb)
+- Self-contained HTML reports — no server needed, just open the file
+- Video recording for web test runs
+- `/refine` slash command to improve vague AI goals into detailed instructions
+- Works as a Claude Code skill — install by copying a folder, no build step
+
+## Step Types
+
+- `tapOn` — tap an element by visible text or accessibility ID
+- `inputText` — type into the focused element
+- `assertVisible` / `assertNotVisible` — assert text is present or absent
+- `scroll` — scroll in a direction
+- `wait` — wait a number of milliseconds
+- `screenshot` — take a named screenshot
+- `launchApp` / `stopApp` — manage app lifecycle
+- `ai` — Claude-driven block with a goal and max_steps limit
+- `verify` — list of plain-language checks evaluated by the agent (UI, animation, logic)
+- `when` — platform conditional (web/android/ios)
+
+## How to Install
+
+```bash
+git clone https://github.com/govindmaheshwari2/flowtest.git
+cp -r flowtest/flowtest ~/.claude/skills/flowtest
+```
+
+Then use `/flowtest` and `/refine` as slash commands in Claude Code.
+
+## Example Flow
+
+```yaml
+flow: checkout
+platform: web
+app: https://demo-store.example.com
+
+steps:
+  - tapOn: "Sign in"
+  - inputText: "testuser@example.com"
+  - tapOn: "Log in"
+  - assertVisible: "Dashboard"
+  - ai:
+      goal: "Add the first product to cart and complete checkout"
+      max_steps: 30
+  - verify:
+      checks:
+        - "Order confirmation message is visible"
+        - "Order number is displayed on screen"
+        - "Total price matches what was in the cart"
+```
+
+## Links
+
+- [Website](https://govindmaheshwari2.github.io/flowtest/)
+- [GitHub Repository](https://github.com/govindmaheshwari2/flowtest)
+- [Sample YAML flows](https://github.com/govindmaheshwari2/flowtest/tree/main/examples)
+
+## License
+
+MIT — free for personal and commercial use.
