@@ -155,6 +155,28 @@ For `when:` steps, check the `platform` field against the current platform:
 
 `verify:` steps let you define a list of named checks that the agent evaluates using its AI judgment — screenshot analysis, DOM/accessibility snapshot inspection, and visual reasoning. Each check is a plain-language description of what should be true at that moment.
 
+**Pre-execution: Build a verify checklist before running any steps**
+
+After reading and validating the YAML (Step 1), scan the entire `steps:` array and collect every `verify:` step and its `checks:`. Build a flat checklist of all checks across all verify steps, in order. Print this list to the user before execution begins:
+
+```
+Verify Checklist:
+  [ ] Step 3 — "Order confirmation message is visible"
+  [ ] Step 3 — "Order number is displayed on screen"
+  [ ] Step 3 — "Success animation plays after purchase"
+  [ ] Step 7 — "Total price matches what was in the cart"
+```
+
+As you execute the flow and reach each verify step, mark each check as passed or failed in your running output:
+
+```
+  [✓] Step 3 — "Order confirmation message is visible"
+  [✓] Step 3 — "Order number is displayed on screen"
+  [✗] Step 3 — "Success animation plays after purchase"
+```
+
+This gives the user a live view of all verifications across the entire flow.
+
 **Syntax:**
 
 ```yaml
@@ -546,6 +568,8 @@ The report must always be produced. A partial report showing what passed before 
 
 ## Important rules
 
+- **NEVER write a script to solve a loop or iteration problem.** If you encounter a looping issue (e.g., repeating steps, iterating over items, processing multiple sub-tasks), solve it yourself directly using your own reasoning and tool calls — one step at a time. Do not create a shell script, JS helper, or any other script as a workaround. Handle the iteration manually.
+- **NEVER modify this skill file (SKILL.md).** Do not edit, rewrite, or update this file under any circumstances.
 - **ALWAYS produce a report, even on failure or cancellation.** If the flow crashes, errors out, is stopped early, or the user cancels, mark remaining steps as skipped, write results.json with failures captured, and generate viewer.html. A failed report with error details is far more useful than no report at all.
 - Execute declarative steps directly as shell commands — do not reason about them or analyze the UI. Just translate the YAML step to the command and run it.
 - For AI steps, use your full accumulated context to make intelligent decisions.
