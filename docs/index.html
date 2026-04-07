@@ -133,7 +133,7 @@
           "name": "What platforms does FlowTest support?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "FlowTest supports web (headless Chrome via agent-browser), Android (via adb and UI Automator), and iOS (via Facebook IDB). A single YAML test file can target all three platforms using platform conditionals."
+            "text": "FlowTest supports web (Chrome via agent-browser), Android (via adb and UI Automator), and iOS (via Facebook IDB). A single YAML test file can target all three platforms using platform conditionals."
           }
         },
         {
@@ -912,8 +912,10 @@
           <span class="code-filename">checkout.yaml</span>
         </div>
         <div class="code-body"><pre><span class="cs">flow:</span> <span class="ct">checkout</span>
-<span class="cs">platform:</span> <span class="ct">web</span>
+<span class="cs">platform:</span> <span class="ct">web</span> <span class="ck"># override with --platform web|android|ios</span>
 <span class="cs">app:</span> <span class="ct">https://demo-store.example.com</span>
+<span class="cs">bundle_android:</span> <span class="ct">com.example.demo</span>
+<span class="cs">bundle_ios:</span> <span class="ct">com.example.demo</span>
 
 <span class="cs">steps:</span>
   - <span class="cs">tapOn:</span> <span class="cv">"Sign in"</span>
@@ -923,7 +925,7 @@
   - <span class="cs">assertVisible:</span> <span class="cv">"Dashboard"</span>
   - <span class="cs">ai:</span>
       <span class="cs">goal:</span> <span class="cv">"Buy the first product and complete checkout"</span>
-      <span class="cs">max_steps:</span> <span class="cn">30</span>
+      <span class="cs">max_steps:</span> <span class="cn">30</span> <span class="ck"># safety limit — caps actions Claude can take</span>
   - <span class="cs">verify:</span>
       <span class="cs">checks:</span>
         - <span class="cv">"Order confirmation page is shown"</span>
@@ -1139,7 +1141,7 @@
   <span class="ck"># ... complete the checkout ...</span>
   - <span class="cs">ai:</span>
       <span class="cs">goal:</span> <span class="cv">"Add item to cart and complete checkout"</span>
-      <span class="cs">max_steps:</span> <span class="cn">20</span>
+      <span class="cs">max_steps:</span> <span class="cn">20</span> <span class="ck"># safety limit — caps actions Claude can take</span>
 
   <span class="ck"># Then verify outcomes</span>
   - <span class="cs">verify:</span>
@@ -1266,7 +1268,7 @@
           </svg>
         </div>
         <h3>Web</h3>
-        <p>Headless Chrome via CDP. Video recording, console logs, full DOM access. Flutter web works out of the box.</p>
+        <p>Chrome via CDP. Video recording, console logs, full DOM access. Flutter web works out of the box — no config needed.</p>
         <span class="driver">agent-browser</span>
       </div>
       <div class="platform-card">
@@ -1309,7 +1311,7 @@
           </svg>
         </div>
         <h3>iOS</h3>
-        <p>iPhone or simulator via Facebook IDB. Native accessibility tree for reliable element targeting.</p>
+        <p>iPhone or simulator via Facebook IDB. Native accessibility tree for reliable element targeting. Works with native and Flutter apps.</p>
         <span class="driver">idb</span>
       </div>
     </div>
@@ -1366,7 +1368,27 @@
         <span class="cmd">cp -r flowtest/flowtest ~/.claude/skills/flowtest</span>
         <span class="copy-hint">click to copy</span>
       </div>
-      <p class="install-note">Then use /flowtest and /refine in Claude Code.</p>
+      <p class="install-note" style="color:var(--text-secondary);font-style:normal;">Then use <code>/flowtest</code> and <code>/refine</code> in Claude Code. Pass <code>--platform web|android|ios</code> to override — defaults to web if omitted.</p>
+    </div>
+
+    <div class="install-block reveal" style="margin-top: 48px;">
+      <div class="section-label" style="margin-bottom: 16px;">Flutter</div>
+      <p style="font-size:14px;color:var(--text-secondary);margin-bottom:20px;line-height:1.7;">Build and install your Flutter app first, then run your flow as normal.</p>
+      <div class="install-cmd" onclick="copyCmd(this, 'flutter run -d web-server --web-port 54545')">
+        <span class="prompt" style="color:var(--accent);margin-right:8px;font-size:11px;white-space:nowrap;">web</span>
+        <span class="cmd">flutter run -d web-server --web-port 54545</span>
+        <span class="copy-hint">click to copy</span>
+      </div>
+      <div class="install-cmd" onclick="copyCmd(this, 'flutter build apk --debug && adb install -r build/app/outputs/flutter-apk/app-debug.apk')">
+        <span class="prompt" style="color:var(--cyan);margin-right:8px;font-size:11px;white-space:nowrap;">android</span>
+        <span class="cmd">flutter build apk --debug &amp;&amp; adb install -r build/app/outputs/flutter-apk/app-debug.apk</span>
+        <span class="copy-hint">click to copy</span>
+      </div>
+      <div class="install-cmd" onclick="copyCmd(this, 'flutter build ios --debug --simulator && idb install build/ios/iphonesimulator/Runner.app')">
+        <span class="prompt" style="color:var(--amber);margin-right:8px;font-size:11px;white-space:nowrap;">ios</span>
+        <span class="cmd">flutter build ios --debug --simulator &amp;&amp; idb install build/ios/iphonesimulator/Runner.app</span>
+        <span class="copy-hint">click to copy</span>
+      </div>
     </div>
   </div>
 </section>
@@ -1393,7 +1415,7 @@
       </details>
       <details class="faq-item">
         <summary class="faq-q">What platforms does FlowTest support?</summary>
-        <p class="faq-a">FlowTest supports web (headless Chrome via agent-browser), Android (via adb and UI Automator), and iOS (via Facebook IDB). A single YAML file can target all three platforms using <code>when:</code> conditionals.</p>
+        <p class="faq-a">FlowTest supports web (Chrome via agent-browser), Android (via adb and UI Automator), and iOS (via Facebook IDB). A single YAML file can target all three platforms using <code>when:</code> conditionals.</p>
       </details>
       <details class="faq-item">
         <summary class="faq-q">How do I install FlowTest?</summary>
@@ -1402,6 +1424,14 @@
       <details class="faq-item">
         <summary class="faq-q">What is the verify: step?</summary>
         <p class="faq-a">The <code>verify:</code> step lets you write plain-language checks the agent evaluates using its AI judgment — screenshot analysis, DOM inspection, and visual reasoning. Works for UI checks (element visibility, text), animation checks (CSS transitions, canvas activity), and logic checks (computed values, totals, form state).</p>
+      </details>
+      <details class="faq-item">
+        <summary class="faq-q">Does FlowTest work with Flutter apps?</summary>
+        <p class="faq-a">Yes — FlowTest works with Flutter on all three platforms. For web, run <code>flutter run -d web-server --web-port 54545</code> and point your flow at <code>http://localhost:54545</code>. For Android, build a debug APK with <code>flutter build apk --debug</code> and install it via <code>adb install -r build/app/outputs/flutter-apk/app-debug.apk</code>. For iOS simulator, build with <code>flutter build ios --debug --simulator</code> and install via <code>idb install build/ios/iphonesimulator/Runner.app</code>. Then run your flow as normal with <code>/flowtest</code>.</p>
+      </details>
+      <details class="faq-item">
+        <summary class="faq-q">What plugins does FlowTest include?</summary>
+        <p class="faq-a">FlowTest ships with two plugins: <code>/flowtest</code> — the main runner that executes flow YAML files and produces HTML reports; and <code>/refine</code> — an interactive assistant that asks clarifying questions and transforms vague <code>ai:</code> goals into detailed, consistent instructions. Both are installed together by copying the skill folder.</p>
       </details>
     </div>
   </div>

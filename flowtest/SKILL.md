@@ -1,3 +1,20 @@
+---
+name: flowtest
+description: |
+  Execute flow YAML files as end-to-end tests against web, Android, and iOS apps.
+  Drives platform drivers (agent-browser, adb, idb) step-by-step, captures
+  screenshots and video, and produces a structured report. Supports declarative
+  steps (tap, type, scroll, assert, screenshot, wait) and AI-driven steps for
+  dynamic UI interactions. Key capabilities:
+  - Multi-platform: web (agent-browser), Android (adb), iOS (idb)
+  - Conditional steps with when:/else: for platform-specific flows
+  - AI steps with goal-directed execution, sub-steps, and full iteration logging
+  - Verify steps: AI-evaluated plain-language checks with pass/fail per check
+  - iOS reliable tapping: uses idb ui describe-point to get true hit-test frames
+  - Video recording on all platforms; automatic screenshots after every step
+  - Generates results.json + viewer.html report even on failure or cancellation
+---
+
 # Flowtest Runner
 
 You are the flowtest runner. You execute flow YAML files by running shell commands directly against the platform driver (agent-browser for web, adb for Android, idb for iOS). You produce a report directory with results.json, screenshots, and optionally a video recording.
@@ -10,7 +27,6 @@ Parse `$ARGUMENTS` for:
 - First positional argument: path to the YAML flow file (required)
 - `--platform <web|android|ios>`: override platform from YAML (optional)
 - `--device <id>`: Android serial or iOS UDID (optional)
-- `--bundle <id>`: app bundle/package ID for mobile (optional)
 
 If no file path is provided, ask the user for it.
 
@@ -20,12 +36,21 @@ Read the file using the Read tool. Validate:
 - `flow:` field exists (string) — this is the flow name
 - `platform:` field exists or `--platform` flag was provided (must be `web`, `android`, or `ios`)
 - `steps:` field exists (array with at least one step)
-- For web: `app:` field exists (URL)
-- For mobile: `bundle:` field exists in YAML or `--bundle` flag was provided
+- If active platform is `web`: `app:` field exists (URL)
+- If active platform is `android`: `bundle_android:` or `bundle:` field exists in YAML
+- If active platform is `ios`: `bundle_ios:` or `bundle:` field exists in YAML
+
+Bundle ID resolution (for android and ios):
+- If `bundle_android:` is set, use it for Android
+- If `bundle_ios:` is set, use it for iOS
+- `bundle:` is the fallback if the platform-specific field is not set
+- Platform-specific fields take precedence over `bundle:`
+
+A YAML may define `app:`, `bundle:`, `bundle_android:`, and `bundle_ios:` together — this is valid and expected for flows that support multiple platforms. Only validate the field relevant to the active platform.
 
 If validation fails, report the specific error and stop.
 
-The `--platform` flag overrides the YAML `platform:` value. The `--bundle` flag overrides the YAML `bundle:` value.
+The `--platform` flag overrides the YAML `platform:` value. `app:`, `bundle:`, `bundle_android:`, and `bundle_ios:` always come from the YAML.
 
 ## Step 2: Set up the report directory
 
@@ -87,12 +112,18 @@ adb devices
 ```
 Check the output shows at least one device. If `--device` was specified, verify that specific device is listed.
 
-2. If `bundle:` is specified, launch the app:
+2. Start video recording in the background — **use `run_in_background: true`**:
+```bash
+adb shell screenrecord --time-limit 7200 /sdcard/flowtest-recording.mp4
+```
+Store a note that recording is in progress on the device at `/sdcard/flowtest-recording.mp4`.
+
+3. If `bundle:` is specified, launch the app:
 ```bash
 adb shell monkey -p <bundle> -c android.intent.category.LAUNCHER 1
 ```
 
-3. Wait 2 seconds for app to load:
+4. Wait 2 seconds for app to load:
 ```bash
 sleep 2
 ```
@@ -107,12 +138,17 @@ idb list-targets
 ```
 Check output shows at least one target. If `--device` was specified, verify that UDID is listed.
 
-2. If `bundle:` is specified, launch the app:
+2. Start video recording in the background — **use `run_in_background: true`**:
+```bash
+idb record-video <report-dir>/recording.mp4
+```
+
+3. If `bundle:` is specified, launch the app:
 ```bash
 idb launch <bundle>
 ```
 
-3. Wait 2 seconds for app to load:
+4. Wait 2 seconds for app to load:
 ```bash
 sleep 2
 ```
@@ -146,36 +182,45 @@ If a step has `mask: true`, execute the input normally but record `"****"` as th
 
 ### Conditional steps (when:)
 
-For `when:` steps, check the `platform` field against the current platform:
-- If it matches, execute the steps in `do:`
-- If it doesn't match and `else:` exists with a `do:`, execute those steps
+`when:` steps allow you to run different steps depending on the current platform. Supported platform values: `web`, `android`, `ios`.
+
+**Syntax:**
+
+```yaml
+# Simple form — run steps only on a specific platform
+- when: android
+  do:
+    - tapOn: "Menu"
+    - tapOn: "Settings"
+
+- when: ios
+  do:
+    - tapOn: "Settings"
+
+# With else — run different steps on other platforms
+- when: android
+  do:
+    - tapOn: "OK"
+  else:
+    do:
+      - tapOn: "Allow"
+
+# Object form (equivalent to simple form)
+- when:
+    platform: android
+  do:
+    - tapOn: "Menu"
+```
+
+**Execution rules:**
+- If the `when:` value (or `platform:` field in object form) matches the current platform, execute the steps in `do:`
+- If it doesn't match and `else:` exists with a `do:`, execute those steps instead
 - If it doesn't match and no `else:`, skip entirely and mark as skipped
+- Both the simple string form (`when: android`) and the object form (`when: { platform: android }`) are equivalent
 
 ### Verify steps (verify:)
 
 `verify:` steps let you define a list of named checks that the agent evaluates using its AI judgment — screenshot analysis, DOM/accessibility snapshot inspection, and visual reasoning. Each check is a plain-language description of what should be true at that moment.
-
-**Pre-execution: Build a verify checklist before running any steps**
-
-After reading and validating the YAML (Step 1), scan the entire `steps:` array and collect every `verify:` step and its `checks:`. Build a flat checklist of all checks across all verify steps, in order. Print this list to the user before execution begins:
-
-```
-Verify Checklist:
-  [ ] Step 3 — "Order confirmation message is visible"
-  [ ] Step 3 — "Order number is displayed on screen"
-  [ ] Step 3 — "Success animation plays after purchase"
-  [ ] Step 7 — "Total price matches what was in the cart"
-```
-
-As you execute the flow and reach each verify step, mark each check as passed or failed in your running output:
-
-```
-  [✓] Step 3 — "Order confirmation message is visible"
-  [✓] Step 3 — "Order number is displayed on screen"
-  [✗] Step 3 — "Success animation plays after purchase"
-```
-
-This gives the user a live view of all verifications across the entire flow.
 
 **Syntax:**
 
@@ -298,13 +343,13 @@ Execute these directly as shell commands. No reasoning or analysis needed — ju
 
 | Step | Command |
 |------|---------|
-| `tapOn: "text"` | `idb ui tap --text "text"` |
-| `tapOn: {id: "res-id"}` | `idb ui describe-all` — parse JSON output, find element where `AXIdentifier` matches the id, get its `AXFrame` coordinates — then `idb ui tap --x <center-x> --y <center-y>` |
+| `tapOn: "text"` | Use `describe-point` scan to find element — see **iOS tap method** below |
+| `tapOn: {id: "res-id"}` | Use `describe-point` scan to find element — see **iOS tap method** below |
 | `inputText: "value"` | `idb ui text "value"` |
-| `scroll: down` | `idb ui swipe 195 600 195 200 0.5` |
-| `scroll: up` | `idb ui swipe 195 200 195 600 0.5` |
-| `scroll: left` | `idb ui swipe 350 422 40 422 0.5` |
-| `scroll: right` | `idb ui swipe 40 422 350 422 0.5` |
+| `scroll: down` | `idb ui swipe 195 600 195 200` |
+| `scroll: up` | `idb ui swipe 195 200 195 600` |
+| `scroll: left` | `idb ui swipe 350 422 40 422` |
+| `scroll: right` | `idb ui swipe 40 422 350 422` |
 | `assertVisible: "text"` | `idb ui describe-all` — check JSON contains the text. If not found, wait 1 second and retry once. |
 | `assertNotVisible: "text"` | Same — check JSON does NOT contain the text |
 | `screenshot: label` | `idb screenshot <report-dir>/screenshots/step-<NN>-<label>.png` |
@@ -312,6 +357,67 @@ Execute these directly as shell commands. No reasoning or analysis needed — ju
 | `launchApp: {bundle}` | `idb launch <bundle>` |
 | `launchApp: {bundle, clearState: true}` | `idb launch <bundle> --terminate-running` |
 | `stopApp` | `idb terminate <bundle>` |
+
+**iOS tap method — always use `describe-point` for coordinates:**
+
+`idb ui describe-all` returns element frames but the reported `AXFrame` origin can differ from the actual tappable hit area (e.g. Flutter widget layers, overlapping views). Always resolve tap coordinates with `idb ui describe-point` to get the element that is actually hit at a given screen position.
+
+**Procedure for any tap on iOS:**
+
+1. Get an approximate position from `describe-all` (AXLabel/AXFrame scan or visual estimate from screenshot)
+2. Call `idb ui describe-point --udid <udid> <x> <y>` at that approximate position
+3. Parse the returned `AXFrame`: `{"x": ..., "y": ..., "width": ..., "height": ...}`
+4. Compute center: `cx = x + width/2`, `cy = y + height/2`
+5. Tap the center: `idb ui tap --udid <udid> <cx> <cy>`
+
+```python
+import subprocess, json, re
+
+def get_tap_center(udid, approx_x, approx_y):
+    r = subprocess.run(
+        ['idb', 'ui', 'describe-point', '--udid', udid, str(approx_x), str(approx_y)],
+        capture_output=True, text=True
+    )
+    data = json.loads(r.stdout)
+    frame = data.get('AXFrame', '')
+    nums = re.findall(r'[\d.]+', frame)
+    if len(nums) == 4:
+        fx, fy, fw, fh = map(float, nums)
+        return int(fx + fw/2), int(fy + fh/2), data.get('AXLabel')
+    return approx_x, approx_y, None
+
+# Example: tap a button found at approximately (200, 700)
+cx, cy, label = get_tap_center(udid, 200, 700)
+subprocess.run(['idb', 'ui', 'tap', '--udid', udid, str(cx), str(cy)])
+```
+
+**Finding an element by label when position is unknown:**
+
+Scan a grid of points using `describe-point` until the target label is found, then tap its frame center:
+
+```python
+def find_and_tap(udid, target_label):
+    for x in range(50, 390, 20):
+        for y in range(100, 850, 20):
+            r = subprocess.run(
+                ['idb', 'ui', 'describe-point', '--udid', udid, str(x), str(y)],
+                capture_output=True, text=True
+            )
+            try:
+                data = json.loads(r.stdout)
+                if target_label in (data.get('AXLabel') or ''):
+                    frame = data.get('AXFrame', '')
+                    nums = re.findall(r'[\d.]+', frame)
+                    if len(nums) == 4:
+                        fx, fy, fw, fh = map(float, nums)
+                        cx, cy = int(fx + fw/2), int(fy + fh/2)
+                        subprocess.run(['idb', 'ui', 'tap', '--udid', udid, str(cx), str(cy)])
+                        return cx, cy
+            except: pass
+    return None
+```
+
+This approach is reliable across all Flutter and native iOS apps regardless of widget layer order.
 
 ### Smart retry for declarative steps
 
@@ -364,12 +470,29 @@ For Android and iOS, set `consoleLogs` to `[]` (console log capture is web-only)
 
 When you reach an `ai:` step, you have full context from all prior steps — screenshots you've seen, element trees from assertions, the current app state. Use this context to drive toward the goal.
 
+**AI goal language — abstract primitives**
+
+`ai:` goals are written in platform-agnostic language. When the goal says any of the following, translate to the correct driver command for the current platform:
+
+| Goal says | Web | Android | iOS |
+|-----------|-----|---------|-----|
+| "take a snapshot" / "read the UI" | `agent-browser snapshot` | `adb shell uiautomator dump /sdcard/ui.xml && adb pull /sdcard/ui.xml /tmp/flowtest-ui.xml` then read the XML | `idb ui describe-all` |
+| "find element by text `<t>`" | look in snapshot output | find `text="<t>"` node in XML, parse `bounds` | scan with `describe-point` grid until `AXLabel` matches `<t>`, use returned frame center |
+| "find element by id `<id>`" | look for `#<id>` in snapshot | find `resource-id` containing `<id>` in XML | scan with `describe-point` grid until `AXUniqueId` matches `<id>`, use returned frame center |
+| "tap `<text>`" | `agent-browser click "<text>"` | dump UI, find node by text, compute center from bounds, `adb shell input tap <cx> <cy>` | use `describe-point` to find element, then `idb ui tap <cx> <cy>` — see **iOS tap method** |
+| "tap element at coordinates" | `agent-browser eval` pointer events | `adb shell input tap <cx> <cy>` | call `idb ui describe-point <x> <y>` first, compute frame center, then `idb ui tap <cx> <cy>` |
+| "type `<value>`" | `agent-browser type "<value>"` | `adb shell input text "<value>"` | `idb ui text "<value>"` |
+| "take a screenshot" | `agent-browser screenshot <path>` | `adb shell screencap -p /sdcard/flowtest-screen.png && adb pull /sdcard/flowtest-screen.png <path>` | `idb screenshot <path>` |
+| "scroll down" | `agent-browser scroll down` | `adb shell input swipe 540 1400 540 600 300` | `idb ui swipe 195 600 195 200 0.5` |
+| "wait N seconds" | `sleep N` | `sleep N` | `sleep N` |
+
+Goals should never contain raw `adb`, `idb`, or `agent-browser` commands — those details live here in the skill, not in the YAML.
+
+**iOS taps in AI steps:** Always use the `describe-point` method described in the **iOS tap method** section above. Never tap raw coordinates from `describe-all` — always verify with `describe-point` first.
+
 Process:
 1. Read the `goal` text and `max_steps` (default 20 if not specified)
-2. Take a snapshot to understand current state:
-   - **Web:** `agent-browser snapshot`
-   - **Android:** `adb shell uiautomator dump` + pull and read the XML
-   - **iOS:** `idb ui describe-all`
+2. Take a snapshot to understand current state (using the platform primitive above)
 3. Based on the goal and current UI state, decide the next action (tap, type, scroll, etc.)
 4. Execute the action using the same commands as declarative steps
 5. **Take a screenshot after EVERY action** (tap, type, scroll, move — anything that changes UI state): `<report-dir>/screenshots/step-<NN>-ai-iter-<I>.png`. This is NOT optional — every click, every move, every interaction gets a screenshot. The screenshot is the proof that the action happened.
@@ -434,12 +557,25 @@ AI steps often perform many distinct logical tasks (e.g., solving 8 puzzles, fil
 
 ## Step 5: Stop recording and write results
 
-### Stop video recording (web only)
+### Stop video recording
 
-**This MUST be its own separate Bash tool call — NOT chained with other commands:**
+**Web** — its own separate Bash tool call:
 ```bash
 agent-browser record stop
 ```
+
+**Android** — stop screenrecord by killing it, then pull the file:
+```bash
+adb shell pkill -l SIGINT screenrecord
+sleep 1
+adb pull /sdcard/flowtest-recording.mp4 <report-dir>/recording.mp4
+```
+
+**iOS** — stop idb record-video by sending SIGINT to the background process:
+```bash
+kill -SIGINT <idb-record-video-pid>
+```
+(The recording is already written to `<report-dir>/recording.mp4` directly.)
 
 ### Calculate results
 
@@ -447,7 +583,7 @@ Compute:
 - `duration`: time from first step start to last step end (milliseconds)
 - `healthScore`: passedSteps / (passedSteps + failedSteps) — exclude skipped steps
 - `totalSteps`, `passedSteps`, `failedSteps`, `skippedSteps`: counts
-- `hasVideo`: true for web, false for android/ios
+- `hasVideo`: true for all platforms (web, android, ios)
 
 ### Write results.json
 
@@ -568,8 +704,6 @@ The report must always be produced. A partial report showing what passed before 
 
 ## Important rules
 
-- **NEVER write a script to solve a loop or iteration problem.** If you encounter a looping issue (e.g., repeating steps, iterating over items, processing multiple sub-tasks), solve it yourself directly using your own reasoning and tool calls — one step at a time. Do not create a shell script, JS helper, or any other script as a workaround. Handle the iteration manually.
-- **NEVER modify this skill file (SKILL.md).** Do not edit, rewrite, or update this file under any circumstances.
 - **ALWAYS produce a report, even on failure or cancellation.** If the flow crashes, errors out, is stopped early, or the user cancels, mark remaining steps as skipped, write results.json with failures captured, and generate viewer.html. A failed report with error details is far more useful than no report at all.
 - Execute declarative steps directly as shell commands — do not reason about them or analyze the UI. Just translate the YAML step to the command and run it.
 - For AI steps, use your full accumulated context to make intelligent decisions.

@@ -1,6 +1,8 @@
 flow: sample-checkout
 platform: web
 app: https://demo-store.example.com
+bundle_android: com.example.demo
+bundle_ios: com.example.demo
 
 steps:
   - tapOn: "Sign in"

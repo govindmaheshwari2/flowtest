@@ -48,6 +48,7 @@ flow.yaml ────────► │                                       
 | [agent-browser](https://github.com/anthropics/agent-browser) | Web platform driver     | `npm install -g @anthropic-ai/agent-browser`                                              |
 | `adb`                                                        | Android platform driver | [Android SDK Platform Tools](https://developer.android.com/tools/releases/platform-tools) |
 | `idb`                                                        | iOS platform driver     | `brew install facebook/fb/idb-companion`                                                  |
+| [Flutter SDK](https://flutter.dev/docs/get-started/install)  | Flutter apps            | `brew install --cask flutter` or [flutter.dev](https://flutter.dev)                       |
 | [Node.js](https://nodejs.org)                                | Report generation       | `brew install node` or [nodejs.org](https://nodejs.org)                                   |
 
 > Only install what you need. Web-only flows need `claude` + `agent-browser` + `node`.
@@ -76,8 +77,10 @@ Create `flows/checkout.yaml`:
 
 ```yaml
 flow: checkout
-platform: web
+platform: web # override with --platform web|android|ios
 app: https://demo-store.example.com
+bundle_android: com.example.demo
+bundle_ios: com.example.demo
 
 steps:
   - tapOn: "Sign in"
@@ -117,9 +120,11 @@ Open `flowtest-report-checkout-<timestamp>/viewer.html` in any browser.
 Flows are YAML files with three required fields:
 
 ```yaml
-flow: my-flow-name # Name (used in report directory)
-platform: web # web | android | ios
-app: https://myapp.com # URL (web) or bundle ID (mobile)
+flow: my-flow-name               # Name (used in report directory)
+platform: web                    # web | android | ios — override with --platform
+app: https://myapp.com           # URL for web
+bundle_android: com.example.demo # Android package ID
+bundle_ios: com.example.demo     # iOS bundle ID
 
 steps:
   -  # ... step list
@@ -203,11 +208,32 @@ AI steps hand control to Claude. Provide a `goal` describing what to accomplish 
 
 | Platform  | Driver          | What it controls                         |
 | --------- | --------------- | ---------------------------------------- |
-| `web`     | `agent-browser` | Headless Chrome via CDP                  |
+| `web`     | `agent-browser` | Chrome via CDP                           |
 | `android` | `adb`           | Android device/emulator via UI Automator |
 | `ios`     | `idb`           | iOS device/simulator via Facebook IDB    |
 
-**Flutter web** works out of the box — Flutter generates a shadow DOM accessibility tree alongside its canvas, which agent-browser reads through Chrome DevTools accessibility APIs.
+### Flutter
+
+FlowTest works with Flutter apps on all three platforms. Build and install your app first, then run the flow as normal.
+
+```bash
+# Flutter web — run on a fixed port so the URL is predictable
+flutter run -d web-server --web-port 54545
+
+# Flutter Android — build a debug APK and install it
+flutter build apk --debug
+adb install -r build/app/outputs/flutter-apk/app-debug.apk
+
+# Flutter iOS (simulator) — build and install via idb
+flutter build ios --debug --simulator
+idb install build/ios/iphonesimulator/Runner.app
+```
+
+**Flutter** works across all three platforms:
+
+- **Flutter web** — works out of the box. Flutter generates a shadow DOM accessibility tree alongside its canvas, which agent-browser reads through Chrome DevTools accessibility APIs.
+- **Flutter Android** — build an APK and install it via `adb` before running.
+- **Flutter iOS** — build the app and install it via `idb` before running.
 
 ---
 
@@ -338,6 +364,23 @@ AI steps include `subSteps` with per-task breakdowns and `iterations` with per-a
 
 ---
 
+## Plugins
+
+FlowTest ships with two Claude Code slash-command plugins:
+
+| Plugin       | Command              | Description                                                  |
+| ------------ | -------------------- | ------------------------------------------------------------ |
+| `flowtest`   | `/flowtest <yaml>`   | Run a flow YAML end-to-end and produce an HTML report        |
+| `refine`     | `/refine <yaml>`     | Interactively improve vague `ai:` goals before running       |
+
+Both plugins are installed together:
+
+```bash
+cp -r flowtest/flowtest ~/.claude/skills/flowtest
+```
+
+---
+
 ## CLI Reference
 
 ### `/flowtest`
@@ -351,7 +394,19 @@ AI steps include `subSteps` with per-task breakdowns and `iterations` with per-a
 | `<yaml-file>`                    | Path to flow YAML (required)     |
 | `--platform <web\|android\|ios>` | Override platform from YAML      |
 | `--device <id>`                  | Android serial or iOS UDID       |
-| `--bundle <id>`                  | App bundle/package ID for mobile |
+
+> **Default platform:** If `--platform` is not passed, the platform is read from the `platform:` field in the YAML. If that is also absent, `web` is used.
+
+```
+# Run on web (default if --platform is omitted)
+/flowtest flows/my-flow.yaml
+
+# Run on Android
+/flowtest flows/my-flow.yaml --platform android
+
+# Run on iOS
+/flowtest flows/my-flow.yaml --platform ios
+```
 
 ### `/refine`
 
